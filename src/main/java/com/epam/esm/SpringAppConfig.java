@@ -13,7 +13,7 @@ import javax.servlet.ServletRegistration;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"com.epam.esm"})
+@ComponentScan("com.epam.esm")
 public class SpringAppConfig implements WebApplicationInitializer {
     @Override
     public void onStartup(ServletContext container) {
