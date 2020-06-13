@@ -1,7 +1,17 @@
-package com.epam.esm.entity;
+package com.epam.esm.repository.entity;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 public class Tag {
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @Column(name = "tag_id")
     private long id;
+
+    @Column(name = "name")
     private String name;
 
     public long getId() {

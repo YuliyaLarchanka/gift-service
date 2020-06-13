@@ -1,21 +1,9 @@
 package com.epam.esm.repository;
 
-import com.epam.esm.entity.Tag;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
+import com.epam.esm.repository.entity.Tag;
 
-import java.util.List;
+import java.util.Optional;
 
-@Repository
-public class TagRepository {
-    private final JdbcTemplate jdbcTemplate;
-
-    public TagRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    public List<Tag> findAll() {
-        String sql = "SELECT * FROM tag";
-        return jdbcTemplate.query(sql, new TagRowMapper());
-    }
+public interface TagRepository extends ApiRepository<Tag, Long> {
+    Optional<Tag> findTagByName(String name);
 }

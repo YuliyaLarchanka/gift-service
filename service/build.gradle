@@ -1,1 +1,7 @@
-
+dependencies {
+    implementation project(':repository')
+    implementation('org.springframework:spring-jdbc:5.2.7.RELEASE')
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.0'
+    api('org.modelmapper:modelmapper:2.3.8')
+    api('org.hibernate:hibernate-validator:6.1.5.Final')
+}
