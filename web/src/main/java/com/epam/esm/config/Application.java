@@ -1,11 +1,11 @@
-package com.epam.esm;
+package com.epam.esm.config;
 
 import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
 import java.io.IOException;
 
-public class Main {
+public class Application {
     private static final int PORT = 8080;
     public static void main(String[] args) throws Exception {
         String appBase = ".";
