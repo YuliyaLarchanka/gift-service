@@ -1,11 +1,13 @@
 package com.epam.esm.web.controller;
 
-import com.epam.esm.service.exception.TagNotFoundException;
+import com.epam.esm.service.exception.DuplicateEntityException;
+import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
 import com.epam.esm.web.dto.ErrorDto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -32,12 +34,18 @@ public class ExceptionHandlingController {
         return new ErrorDto("Something happened. We are already looking at this");
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorDto> responseStatusExceptionHandler(ResponseStatusException e) {
         logger.error(e);
         ErrorDto errorDto = new ErrorDto(e.getReason());
         return ResponseEntity.status(e.getStatus()).body(errorDto);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ErrorDto messageNotReadableExceptionHandler(HttpMessageNotReadableException e) {
+        logger.error(e);
+        return new ErrorDto("Request sent can't be parsed");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -70,8 +78,15 @@ public class ExceptionHandlingController {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(TagNotFoundException.class)
-    public ErrorDto TagNotFoundHandler(TagNotFoundException e) {
+    @ExceptionHandler(EntityToDeleteNotFoundException.class)
+    public ErrorDto TagNotFoundHandler(EntityToDeleteNotFoundException e) {
+        logger.error(e);
+        return new ErrorDto(e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(DuplicateEntityException.class)
+    public ErrorDto paramValidationHandler(DuplicateEntityException e) {
         logger.error(e);
         return new ErrorDto(e.getMessage());
     }

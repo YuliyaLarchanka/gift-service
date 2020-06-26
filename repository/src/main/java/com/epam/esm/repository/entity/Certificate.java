@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GiftCertificate {
+public class Certificate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "gift_certificate_id")
@@ -104,7 +104,7 @@ public class GiftCertificate {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        GiftCertificate that = (GiftCertificate) o;
+        Certificate that = (Certificate) o;
 
         if (id != that.id) return false;
         if (durationInDays != that.durationInDays) return false;

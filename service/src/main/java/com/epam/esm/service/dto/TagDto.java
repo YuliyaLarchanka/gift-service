@@ -1,10 +1,13 @@
 package com.epam.esm.service.dto;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 public class TagDto {
     private long id;
+
     @NotBlank(message = "Name can't be blank")
+    @Size(min = 2, max = 35)
     private String name;
 
     public long getId() {

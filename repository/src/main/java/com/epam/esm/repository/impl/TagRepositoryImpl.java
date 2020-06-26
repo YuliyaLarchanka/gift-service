@@ -47,7 +47,7 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public Optional<Tag> findTagByName(String name) {
+    public Optional<Tag> findByName(String name) {
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(FIND_TAG_BY_NAME, new Object[]{name}, new TagRowMapper()));
         } catch (EmptyResultDataAccessException e) {

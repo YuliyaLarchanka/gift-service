@@ -1,10 +1,10 @@
 package com.epam.esm.repository.impl;
 
-import com.epam.esm.repository.GiftCertificateRepository;
+import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.TagRepository;
-import com.epam.esm.repository.entity.GiftCertificate;
+import com.epam.esm.repository.entity.Certificate;
 import com.epam.esm.repository.entity.Tag;
-import com.epam.esm.repository.rowmapper.GiftCertificateRowMapper;
+import com.epam.esm.repository.rowmapper.CertificateRowMapper;
 import com.epam.esm.repository.rowmapper.TagRowMapper;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
-public class GiftCertificateRepositoryImpl implements GiftCertificateRepository {
+public class CertificateRepositoryImpl implements CertificateRepository {
     private final JdbcTemplate jdbcTemplate;
     private final TagRepository tagRepository;
 
@@ -43,6 +43,9 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
             " price, date_of_creation, date_of_modification, duration_in_days FROM gift_certificate " +
             "WHERE gift_certificate_id = ?";
 
+    private final static String FIND_CERTIFICATE_BY_NAME = "SELECT gift_certificate_id, name, description," +
+            " price, date_of_creation, date_of_modification, duration_in_days FROM gift_certificate WHERE name = ?";
+
     private final static String DELETE_TAGS_FROM_M2M = "DELETE FROM gift_certificate_m2m_tag " +
             "WHERE tag_id = ? and gift_certificate_id = ?";
 
@@ -55,17 +58,16 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
     private final static String DELETE_CERTIFICATE = "DELETE FROM gift_certificate WHERE gift_certificate_id = ?";
 
 
-    public GiftCertificateRepositoryImpl(JdbcTemplate jdbcTemplate, TagRepository tagRepository) {
+    public CertificateRepositoryImpl(JdbcTemplate jdbcTemplate, TagRepository tagRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.tagRepository = tagRepository;
     }
 
     @Override
-    public GiftCertificate create(GiftCertificate giftCertificate) {
-        giftCertificate = createGiftCertificateHelper(giftCertificate);
-        long certificateId = giftCertificate.getId();
-        List<Tag> tagList = giftCertificate.getTagList();
-
+    public Certificate create(Certificate certificate) {
+        certificate = createGiftCertificateHelper(certificate);
+        long certificateId = certificate.getId();
+        List<Tag> tagList = certificate.getTagList();
         if (!tagList.isEmpty()) {
             tagList = tagList.stream()
                     .map(this::createTagIfNotExist)
@@ -73,26 +75,25 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
 
             tagList.forEach(tag -> jdbcTemplate.update(INSERT_M2M, certificateId, tag.getId()));
         }
-        giftCertificate.setTagList(tagList);
-        return giftCertificate;
+        certificate.setTagList(tagList);
+        return certificate;
     }
 
     private Tag createTagIfNotExist(Tag tag) {
         String name = tag.getName();
-        Optional<Tag> optionalTag = tagRepository.findTagByName(name);
+        Optional<Tag> optionalTag = tagRepository.findByName(name);
         if (optionalTag.isEmpty()) {
             return tagRepository.create(tag);
         }
         return optionalTag.get();
     }
 
-    private GiftCertificate createGiftCertificateHelper(GiftCertificate giftCertificate) {
-        String name = giftCertificate.getName();
-        String description = giftCertificate.getDescription();
-        BigDecimal price = giftCertificate.getPrice();
-        Timestamp dateOfCreation = Timestamp.valueOf(giftCertificate.getDateOfCreation());
-        short durationInDays = giftCertificate.getDurationInDays();
-
+    private Certificate createGiftCertificateHelper(Certificate certificate) {
+        String name = certificate.getName();
+        String description = certificate.getDescription();
+        BigDecimal price = certificate.getPrice();
+        Timestamp dateOfCreation = Timestamp.valueOf(certificate.getDateOfCreation());
+        short durationInDays = certificate.getDurationInDays();
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(
@@ -108,34 +109,41 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
                 },
                 keyHolder
         );
-        giftCertificate.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-        return giftCertificate;
+        certificate.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        return certificate;
     }
 
 
     @Override
-    public List<GiftCertificate> findAll() {
-        List<GiftCertificate> giftCertificateList = jdbcTemplate.query(FIND_ALL_CERTIFICATES, new GiftCertificateRowMapper());
-        return giftCertificateList.stream().map(this::populateCertificateTags).collect(Collectors.toList());
+    public List<Certificate> findAll() {
+        List<Certificate> certificateList = jdbcTemplate.query(FIND_ALL_CERTIFICATES, new CertificateRowMapper());
+        return certificateList.stream().map(this::populateCertificateTags).collect(Collectors.toList());
     }
 
     @Override
-    public Optional<GiftCertificate> findById(Long id) {
+    public Optional<Certificate> findById(Long id) {
         try {
-            GiftCertificate giftCertificate = jdbcTemplate.queryForObject(FIND_CERTIFICATE_BY_ID, new Object[]{id}, new GiftCertificateRowMapper());
-            return Optional.ofNullable(populateCertificateTags(giftCertificate));
+            Certificate certificate = jdbcTemplate.queryForObject(FIND_CERTIFICATE_BY_ID, new Object[]{id}, new CertificateRowMapper());
+            return Optional.ofNullable(populateCertificateTags(certificate));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }
 
     @Override
-    public GiftCertificate update(GiftCertificate giftCertificate) {
-        giftCertificate = updateGiftCertificateHelper(giftCertificate);
+    public Optional<Certificate> findByName(String name) {
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(FIND_CERTIFICATE_BY_NAME, new Object[]{name}, new CertificateRowMapper()));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
 
-        long certificateId = giftCertificate.getId();
-        List<Tag> updatedTags = giftCertificate.getTagList();
-
+    @Override
+    public Certificate update(Certificate certificate) {
+        certificate = updateGiftCertificateHelper(certificate);
+        long certificateId = certificate.getId();
+        List<Tag> updatedTags = certificate.getTagList();
         List<Tag> oldTagList = jdbcTemplate.query(FIND_CERTIFICATE_TAGS, new Object[]{certificateId}, new TagRowMapper());
 
         List<Tag> tagsToAdd = updatedTags
@@ -145,7 +153,7 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
 
         List<Tag> existingTagsToAdd = tagsToAdd
                 .stream()
-                .map(tag -> tagRepository.findTagByName(tag.getName()))
+                .map(tag -> tagRepository.findByName(tag.getName()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
@@ -173,29 +181,29 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
         }
 
         List<Tag> updatedTagList = jdbcTemplate.query(FIND_CERTIFICATE_TAGS, new Object[]{certificateId}, new TagRowMapper());
-        giftCertificate.setTagList(updatedTagList);
-        return giftCertificate;
+        certificate.setTagList(updatedTagList);
+        return certificate;
     }
 
     private boolean checkListNotContainsTag(List<Tag> tagList, Tag tagToSearch) {
         return tagList.stream().noneMatch(tag -> tagToSearch.getName().equals(tag.getName()));
     }
 
-    private GiftCertificate updateGiftCertificateHelper(GiftCertificate giftCertificate) {
-        long id = giftCertificate.getId();
-        String name = giftCertificate.getName();
-        String description = giftCertificate.getDescription();
-        BigDecimal price = giftCertificate.getPrice();
-        LocalDateTime dateOfModification = giftCertificate.getDateOfModification();
-        short durationInDays = giftCertificate.getDurationInDays();
+    private Certificate updateGiftCertificateHelper(Certificate certificate) {
+        long id = certificate.getId();
+        String name = certificate.getName();
+        String description = certificate.getDescription();
+        BigDecimal price = certificate.getPrice();
+        LocalDateTime dateOfModification = certificate.getDateOfModification();
+        short durationInDays = certificate.getDurationInDays();
 
         Object[] params = {name, description, price, dateOfModification, durationInDays, id};
 
         jdbcTemplate.update(UPDATE_CERTIFICATE_SQL, params);
         LocalDateTime dateOfCreation = jdbcTemplate.queryForObject(GET_CERTIFICATE_DATE_OF_CREATION,
                 new Object[]{id}, LocalDateTime.class);
-        giftCertificate.setDateOfCreation(dateOfCreation);
-        return giftCertificate;
+        certificate.setDateOfCreation(dateOfCreation);
+        return certificate;
     }
 
     @Override
@@ -203,15 +211,36 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
         jdbcTemplate.update(DELETE_CERTIFICATE, id);
     }
 
-    private GiftCertificate populateCertificateTags(GiftCertificate giftCertificate) {
-        List<Tag> tagList = jdbcTemplate.query(FIND_CERTIFICATE_TAGS, new Object[]{giftCertificate.getId()}, new TagRowMapper());
-        giftCertificate.setTagList(tagList);
-        return giftCertificate;
+    private Certificate populateCertificateTags(Certificate certificate) {
+        List<Tag> tagList = jdbcTemplate.query(FIND_CERTIFICATE_TAGS, new Object[]{certificate.getId()}, new TagRowMapper());
+        certificate.setTagList(tagList);
+        return certificate;
     }
 
     @Override
-    public List<GiftCertificate> filterCertificates(StringBuilder sql) {
-        List<GiftCertificate> giftCertificateList = jdbcTemplate.query(sql.toString(), new GiftCertificateRowMapper());
-        return giftCertificateList.stream().map(this::populateCertificateTags).collect(Collectors.toList());
+    public List<Certificate> filterCertificates(String tagName, String textField, String order) {
+        StringBuilder sql = new StringBuilder("SELECT g.gift_certificate_id, g.name, g.description, g.price," +
+                " g.date_of_creation, g.date_of_modification, g.duration_in_days FROM ");
+
+        if (textField != null) {
+            sql.append("\"filter_by_text\"('").append(textField).append("') as g");
+        } else {
+            sql.append("gift_certificate as g");
+        }
+
+        if (tagName != null) {
+            Optional<Tag> tagOptional = tagRepository.findByName(tagName);
+            if (tagOptional.isPresent()) {
+                long id = tagOptional.get().getId();
+                sql.append(" JOIN gift_certificate_m2m_tag as m2m " +
+                        "ON m2m.gift_certificate_id = g.gift_certificate_id and m2m.tag_id = ").append(id);
+            }
+        }
+
+        if (order != null) {
+            sql.append(" ORDER BY g.date_of_creation ").append(order.toUpperCase());
+        }
+        List<Certificate> certificateList = jdbcTemplate.query(sql.toString(), new CertificateRowMapper());
+        return certificateList.stream().map(this::populateCertificateTags).collect(Collectors.toList());
     }
 }
