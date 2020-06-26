@@ -2,10 +2,15 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '5.2.0' apply false
 }
 
+subprojects {
+    if (name.startsWith('web')) {
+        apply plugin: 'com.github.johnrengelman.shadow'
+        apply plugin: 'application'
+    }
+}
+
 allprojects {
-    apply plugin: 'java'
-    apply plugin: 'com.github.johnrengelman.shadow'
-    apply plugin: 'application'
+    apply plugin: 'java-library'
 
     group = 'com.epam.esm'
     version '1.0-SNAPSHOT'
@@ -15,26 +20,18 @@ allprojects {
     }
 }
 
-subprojects {
-
-}
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-mainClassName = 'com.epam.esm.Main'
-
-shadowJar {
-    mergeServiceFiles()
-}
-
 allprojects {
     dependencies {
         implementation('org.apache.tomcat.embed:tomcat-embed-jasper:8.5.47')
-        implementation('org.springframework:spring-webmvc:5.0.1.RELEASE')
+        implementation('org.springframework:spring-webmvc:5.2.7.RELEASE')
         implementation('com.fasterxml.jackson.core:jackson-databind:2.9.2')
-        testImplementation('junit:junit:4.12')
+        implementation('org.apache.logging.log4j:log4j-core:2.13.3')
+        testImplementation('junit:junit:4.13')
+        testImplementation('org.mockito:mockito-core:3.3.3')
+        testImplementation('org.skyscreamer:jsonassert:1.5.0')
     }
 }
+
 
 
 

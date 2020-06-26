@@ -1,1 +1,16 @@
+mainClassName = 'com.epam.esm.web.Main'
 
+shadowJar {
+    mergeServiceFiles()
+}
+
+dependencies {
+    implementation project(':service')
+    implementation project(':repository')
+}
+
+jar {
+    manifest {
+        attributes 'Multi-Release': 'true'
+    }
+}
