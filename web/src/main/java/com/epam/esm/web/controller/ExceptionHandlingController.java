@@ -18,7 +18,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.List;
@@ -57,7 +56,7 @@ public class ExceptionHandlingController {
         logger.error(e);
         BindingResult result = e.getBindingResult();
         List<FieldError> fieldErrors = result.getFieldErrors();
-        return new ErrorDto(BAD_REQUEST_CODE,"Validation error", fieldErrors);
+        return new ErrorDto(BAD_REQUEST_CODE, "Validation error", fieldErrors);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
