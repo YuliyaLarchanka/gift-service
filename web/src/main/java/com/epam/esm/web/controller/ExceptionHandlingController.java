@@ -16,12 +16,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.epam.esm.web.util.ErrorCodes.*;
 
 @RestControllerAdvice
 public class ExceptionHandlingController {
@@ -31,13 +34,13 @@ public class ExceptionHandlingController {
     @ExceptionHandler(Exception.class)
     public ErrorDto serverErrorHandler(Exception e) {
         logger.error(e);
-        return new ErrorDto("Something happened. We are already looking at this");
+        return new ErrorDto(INTERNAL_SERVER_ERROR_CODE, "Something happened. We are already looking at this");
     }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorDto> responseStatusExceptionHandler(ResponseStatusException e) {
         logger.error(e);
-        ErrorDto errorDto = new ErrorDto(e.getReason());
+        ErrorDto errorDto = new ErrorDto(CONFLICT_CODE, e.getReason());
         return ResponseEntity.status(e.getStatus()).body(errorDto);
     }
 
@@ -45,7 +48,7 @@ public class ExceptionHandlingController {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ErrorDto messageNotReadableExceptionHandler(HttpMessageNotReadableException e) {
         logger.error(e);
-        return new ErrorDto("Request sent can't be parsed");
+        return new ErrorDto(BAD_REQUEST_CODE, "Request sent can't be parsed");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -54,21 +57,21 @@ public class ExceptionHandlingController {
         logger.error(e);
         BindingResult result = e.getBindingResult();
         List<FieldError> fieldErrors = result.getFieldErrors();
-        return new ErrorDto("Validation error", fieldErrors);
+        return new ErrorDto(BAD_REQUEST_CODE,"Validation error", fieldErrors);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ErrorDto paramValidationHandler(MethodArgumentTypeMismatchException e) {
         logger.error(e);
-        return new ErrorDto(e.getMessage());
+        return new ErrorDto(BAD_REQUEST_CODE, e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ConstraintViolationException.class)
     public ErrorDto paramValidationHandler(ConstraintViolationException e) {
         logger.error(e);
-        ErrorDto errorDto = new ErrorDto("Request parameter validation error");
+        ErrorDto errorDto = new ErrorDto(BAD_REQUEST_CODE, "Request parameter validation error");
         List<String> violations = e.getConstraintViolations()
                 .stream()
                 .map(ConstraintViolation::getMessage)
@@ -81,13 +84,20 @@ public class ExceptionHandlingController {
     @ExceptionHandler(EntityToDeleteNotFoundException.class)
     public ErrorDto TagNotFoundHandler(EntityToDeleteNotFoundException e) {
         logger.error(e);
-        return new ErrorDto(e.getMessage());
+        return new ErrorDto(NOT_FOUND_CODE, e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ErrorDto ResourceNotFoundHandler(NoHandlerFoundException e) {
+        logger.error(e);
+        return new ErrorDto(NOT_FOUND_CODE, e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(DuplicateEntityException.class)
     public ErrorDto paramValidationHandler(DuplicateEntityException e) {
         logger.error(e);
-        return new ErrorDto(e.getMessage());
+        return new ErrorDto(CONFLICT_CODE, e.getMessage());
     }
 }
