@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -234,6 +235,8 @@ public class CertificateRepositoryImpl implements CertificateRepository {
                 long id = tagOptional.get().getId();
                 sql.append(" JOIN gift_certificate_m2m_tag as m2m " +
                         "ON m2m.gift_certificate_id = g.gift_certificate_id and m2m.tag_id = ").append(id);
+            } else {
+                return Collections.emptyList();
             }
         }
 
