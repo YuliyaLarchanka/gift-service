@@ -2,6 +2,7 @@ package com.epam.esm.web.controller;
 
 import com.epam.esm.service.exception.DuplicateEntityException;
 import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
+import com.epam.esm.service.exception.WrongFilterOrderException;
 import com.epam.esm.web.dto.ErrorDto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,6 +63,13 @@ public class ExceptionHandlingController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ErrorDto paramValidationHandler(MethodArgumentTypeMismatchException e) {
+        logger.error(e);
+        return new ErrorDto(BAD_REQUEST_CODE, e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(WrongFilterOrderException.class)
+    public ErrorDto paramValidationHandler(WrongFilterOrderException e) {
         logger.error(e);
         return new ErrorDto(BAD_REQUEST_CODE, e.getMessage());
     }

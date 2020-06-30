@@ -8,9 +8,11 @@ import com.epam.esm.service.dto.CertificateDto;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.DuplicateEntityException;
 import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
+import com.epam.esm.service.exception.WrongFilterOrderException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -93,6 +95,9 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public List<CertificateDto> filterCertificates(String tagName, String textField, String order) {
+        if (!StringUtils.isEmpty(order) && !"desc".equalsIgnoreCase(order) && !"asc".equalsIgnoreCase(order)) {
+            throw new WrongFilterOrderException("Wrong filter order '" + order + "' ");
+        }
         List<Certificate> certificateList = certificateRepository.filterCertificates(tagName, textField, order);
         return certificateList
                 .stream().map(this::convertCertificateToDto).collect(Collectors.toList());
