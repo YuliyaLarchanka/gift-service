@@ -11,7 +11,7 @@ import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
 import com.epam.esm.service.exception.WrongFilterOrderException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+//import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
 public class CertificateServiceImpl implements CertificateService {
     private final CertificateRepository certificateRepository;
     private final TagRepository tagRepository;
-    private final ModelMapper modelMapper;
+    private final ModelMapper modelMapper = null;
 
-    public CertificateServiceImpl(CertificateRepository certificateRepository, TagRepository tagRepository, ModelMapper modelMapper) {
+    public CertificateServiceImpl(CertificateRepository certificateRepository, TagRepository tagRepository/*, ModelMapper modelMapper*/) {
         this.certificateRepository = certificateRepository;
         this.tagRepository = tagRepository;
-        this.modelMapper = modelMapper;
+//        this.modelMapper = modelMapper;
     }
 
     @Override
-    @Transactional
+//    @Transactional
     public CertificateDto create(CertificateDto certificateDto) {
         Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
         Optional<Certificate> certificateOptional = certificateRepository.findByName(certificate.getName());
@@ -59,7 +59,7 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    @Transactional
+//    @Transactional
     public Optional<CertificateDto> update(CertificateDto certificateDto) {
         Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
         Optional<Certificate> existedCertificate = certificateRepository.findById(certificate.getId());

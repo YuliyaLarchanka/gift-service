@@ -16,11 +16,11 @@ import java.util.stream.Collectors;
 @Service
 public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
-    private final ModelMapper modelMapper;
+    private final ModelMapper modelMapper = null;
 
-    public TagServiceImpl(TagRepository tagRepository, ModelMapper modelMapper) {
+    public TagServiceImpl(TagRepository tagRepository/*, ModelMapper modelMapper*/) {
         this.tagRepository = tagRepository;
-        this.modelMapper = modelMapper;
+//        this.modelMapper = modelMapper;
     }
 
     @Override
