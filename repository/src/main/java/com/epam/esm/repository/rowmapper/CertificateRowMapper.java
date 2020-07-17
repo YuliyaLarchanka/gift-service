@@ -12,7 +12,9 @@ public class CertificateRowMapper implements RowMapper<Certificate> {
         Certificate certificate = new Certificate();
         certificate.setId(rs.getLong("gift_certificate_id"));
         certificate.setName(rs.getString("name"));
+
         certificate.setDescription(rs.getString("description"));
+
         certificate.setPrice(rs.getBigDecimal("price"));
         certificate.setDateOfCreation(rs.getTimestamp("date_of_creation").toLocalDateTime());
 

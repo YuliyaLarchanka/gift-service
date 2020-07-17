@@ -4,17 +4,17 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 public class TagDto {
-    private long id;
+    private Long id;
 
     @NotBlank(message = "Name can't be blank")
     @Size(min = 2, max = 35)
     private String name;
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

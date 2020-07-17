@@ -1,25 +1,20 @@
 package com.epam.esm.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
-public class CertificateDto {
+public class CertificatePatchDto {
     private Long id;
 
-    @NotBlank(message = "Name can't be blank")
     @Size(min = 2, max = 60)
     private String name;
 
     @Size(min = 10, max = 60)
     private String description;
 
-    @NotNull(message = "Price should be presented")
     @DecimalMin(value = "1.0", message = "Price can't be lower than 5$")
     @Digits(integer = 5, fraction = 2, message = "No more than 3 character")
     private BigDecimal price;
@@ -30,12 +25,9 @@ public class CertificateDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateOfModification;
 
-    @NotNull(message = "Duration in days should be presented")
     @Min(value = 1, message = "Duration can't be less than a day")
     @Max(value = 365, message = "Duration can't be more than a year(365 days)")
     private Short durationInDays;
-
-    private List<TagDto> tagDtoList = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -85,34 +77,11 @@ public class CertificateDto {
         this.dateOfModification = dateOfModification;
     }
 
-    public short getDurationInDays() {
+    public Short getDurationInDays() {
         return durationInDays;
     }
 
-    public void setDurationInDays(short durationInDays) {
+    public void setDurationInDays(Short durationInDays) {
         this.durationInDays = durationInDays;
-    }
-
-    @JsonProperty("tags")
-    public List<TagDto> getTagDtoList() {
-        return tagDtoList;
-    }
-
-    public void setTagDtoList(List<TagDto> tagDtoList) {
-        this.tagDtoList = tagDtoList;
-    }
-
-    @Override
-    public String toString() {
-        return "CertificateDto{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", price=" + price +
-                ", dateOfCreation=" + dateOfCreation +
-                ", dateOfModification=" + dateOfModification +
-                ", durationInDays=" + durationInDays +
-                ", tagDtoList=" + tagDtoList +
-                '}';
     }
 }

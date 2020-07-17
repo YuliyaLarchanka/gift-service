@@ -2,6 +2,7 @@ package com.epam.esm.web.controller;
 
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.dto.CertificateDto;
+import com.epam.esm.service.dto.CertificatePatchDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -24,35 +25,44 @@ public class CertificateController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public CertificateDto createGiftCertificate(@Valid @RequestBody CertificateDto certificateDto) {
+    public CertificateDto create(@Valid @RequestBody CertificateDto certificateDto) {
         return certificateService.create(certificateDto);
     }
 
     @GetMapping
-    public List<CertificateDto> findGiftCertificates() {
+    public List<CertificateDto> find() {
         return certificateService.findAll();
     }
 
     @GetMapping("/{id}")
-    public CertificateDto findGiftCertificateById(@PathVariable @Min(value = 1, message = "Id should be greater than zero") long id) {
+    public CertificateDto findById(@PathVariable @Min(value = 1, message = "Id should be greater than zero") long id) {
         return certificateService.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
     }
 
-    @PutMapping
-    public CertificateDto updateGiftCertificate(@Valid @RequestBody CertificateDto certificateDto) {
+    @PutMapping("/{id}")
+    public CertificateDto update(@PathVariable @Min(value = 1, message = "Id should be greater than zero") long id,
+                                                @Valid @RequestBody CertificateDto certificateDto) {
+        certificateDto.setId(id);
         return certificateService.update(certificateDto).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
     }
 
+    @PatchMapping("/{id}")
+    public CertificateDto updateOneField(@PathVariable @Min(value = 1, message = "Id should be greater than zero") long id,
+                                                @Valid @RequestBody CertificatePatchDto certificatePatchDto) {
+        certificatePatchDto.setId(id);
+        return certificateService.updateOneField(certificatePatchDto).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
+    }
+
     @DeleteMapping("/{id}")
-    public void deleteGiftCertificate(@PathVariable @Min(value = 1, message = "Id should be greater than zero") long id) {
+    public void delete(@PathVariable @Min(value = 1, message = "Id should be greater than zero") long id) {
         certificateService.delete(id);
     }
 
 
     @GetMapping("/filter")
-    public List<CertificateDto> filterCertificates(@RequestParam(required = false) String tagName,
-                                                   @RequestParam(required = false) String textField,
+    public List<CertificateDto> filter(@RequestParam(required = false) String tagName,
+                                                   @RequestParam(required = false) String descriptionPart,
                                                    @RequestParam(required = false) String order) {
-        return certificateService.filterCertificates(tagName, textField, order);
+        return certificateService.filterCertificates(tagName, descriptionPart, order);
     }
 }

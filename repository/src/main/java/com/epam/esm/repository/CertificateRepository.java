@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface CertificateRepository extends ApiRepository<Certificate, Long> {
     Optional<Certificate> findByName(String name);
 
-    List<Certificate> filterCertificates(String tagName, String textField, String order);
+    List<Certificate> filterCertificates(String tagName, String descriptionPart, String order);
 }

@@ -8,6 +8,7 @@ import com.epam.esm.service.exception.DuplicateEntityException;
 import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,14 +17,15 @@ import java.util.stream.Collectors;
 @Service
 public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
-    private final ModelMapper modelMapper = null;
+    private final ModelMapper modelMapper;
 
-    public TagServiceImpl(TagRepository tagRepository/*, ModelMapper modelMapper*/) {
+    public TagServiceImpl(TagRepository tagRepository, ModelMapper modelMapper) {
         this.tagRepository = tagRepository;
-//        this.modelMapper = modelMapper;
+        this.modelMapper = modelMapper;
     }
 
     @Override
+    @Transactional
     public TagDto create(TagDto tagDto) {
         Tag tag = modelMapper.map(tagDto, Tag.class);
         Optional<Tag> tagOptional = tagRepository.findByName(tag.getName());
@@ -53,11 +55,12 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         Optional<Tag> tagOptional = tagRepository.findById(id);
         if (tagOptional.isEmpty()) {
             throw new EntityToDeleteNotFoundException("Tag with this id is not found");
         }
-        tagRepository.delete(id);
+        tagRepository.delete(tagOptional.get());
     }
 }
