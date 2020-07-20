@@ -95,4 +95,13 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> findOrdersByAccountId(Long id) {
         return orderRepository.findOrdersByAccountId(id);
     }
+
+    @Override
+    public Order findPriceAndTimestampOfOrder(Long accountId, Long orderId){
+         Optional<Order> orderOptional = orderRepository.findPriceAndTimestampOfOrder(accountId, orderId);
+         if(orderOptional.isEmpty()){
+             throw new RuntimeException();//TODO
+         }
+         return orderOptional.get();
+    }
 }

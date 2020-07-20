@@ -1,10 +1,12 @@
 package com.epam.esm.web.dto;
 
 import com.epam.esm.repository.entity.RoleEnum;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AccountDto {
     private Long id;
 

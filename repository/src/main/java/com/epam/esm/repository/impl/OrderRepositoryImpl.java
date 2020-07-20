@@ -58,4 +58,12 @@ public class OrderRepositoryImpl implements OrderRepository {
         Query query = em.createQuery(sql, Order.class);
         return  (List<Order>) query.setParameter(1, id).getResultList().stream().collect(Collectors.toList());
     }
+
+    @Override
+    public Optional<Order> findPriceAndTimestampOfOrder(Long accountId, Long orderId){
+        String sql = "SELECT o FROM Order o WHERE o.account.id = ?1 and o.id = ?2";
+        Query query = em.createQuery(sql, Order.class);
+        Order order =  (Order) query.setParameter(1, accountId).setParameter(2, orderId).getSingleResult();
+        return Optional.of(order);
+    }
 }

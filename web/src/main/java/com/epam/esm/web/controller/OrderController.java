@@ -4,7 +4,6 @@ import com.epam.esm.repository.entity.Order;
 import com.epam.esm.service.OrderService;
 import com.epam.esm.web.dto.OrderDto;
 import com.epam.esm.web.mapper.OrderMapper;
-import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +23,7 @@ public class OrderController {
         this.orderMapper = orderMapper;
     }
 
-    @PostMapping(value = "/orders", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/orders")
         public OrderDto create(@Valid @RequestBody OrderDto orderDto) {
        Order order = orderMapper.orderDtoToOrder(orderDto);
        Order createdOrder = orderService.create(order);
@@ -35,4 +34,10 @@ public class OrderController {
     public List<OrderDto> findOrdersByAccountId(@PathVariable @Min(value = 1, message = "Id should be greater than zero") long accountId) {
         return orderService.findOrdersByAccountId(accountId).stream().map(orderMapper::orderToOrderDto).collect(Collectors.toList());
     }
+
+    @GetMapping("accounts/{accountId}/orders/{orderId}")
+        public OrderDto findPriceAndDateOfOrder(@PathVariable long accountId, @PathVariable long orderId){
+            Order order = orderService.findPriceAndTimestampOfOrder(accountId, orderId);
+            return orderMapper.orderToOrderDtoPriceTimestamp(order);
+        }
 }

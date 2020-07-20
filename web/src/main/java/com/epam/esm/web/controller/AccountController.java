@@ -31,6 +31,4 @@ public class AccountController {
         Account createdAccount = accountService.create(account);
         return modelMapper.map(createdAccount, AccountDto.class);
     }
-
-
 }
