@@ -1,4 +1,4 @@
-package com.epam.esm.service.dto;
+package com.epam.esm.web.dto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;

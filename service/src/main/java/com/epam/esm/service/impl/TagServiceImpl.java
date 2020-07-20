@@ -3,54 +3,44 @@ package com.epam.esm.service.impl;
 import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.TagService;
-import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.DuplicateEntityException;
 import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
-    private final ModelMapper modelMapper;
 
-    public TagServiceImpl(TagRepository tagRepository, ModelMapper modelMapper) {
+    public TagServiceImpl(TagRepository tagRepository) {
         this.tagRepository = tagRepository;
-        this.modelMapper = modelMapper;
     }
 
     @Override
     @Transactional
-    public TagDto create(TagDto tagDto) {
-        Tag tag = modelMapper.map(tagDto, Tag.class);
+    public Tag create(Tag tag) {
         Optional<Tag> tagOptional = tagRepository.findByName(tag.getName());
         if (tagOptional.isPresent()) {
             throw new DuplicateEntityException("Tag with the same name already exists");
         }
-        tag = tagRepository.create(tag);
-        return modelMapper.map(tag, TagDto.class);
+        return tagRepository.create(tag);
     }
 
     @Override
-    public List<TagDto> findAll() {
-        return tagRepository.findAll()
-                .stream()
-                .map(tag -> modelMapper.map(tag, TagDto.class))
-                .collect(Collectors.toList());
+    public List<Tag> findAll() {
+        return tagRepository.findAll();
     }
 
     @Override
-    public Optional<TagDto> findById(Long id) {
-        return tagRepository.findById(id).map(tag -> modelMapper.map(tag, TagDto.class));
+    public Optional<Tag> findById(Long id) {
+        return tagRepository.findById(id);
     }
 
     @Override
-    public Optional<TagDto> update(TagDto var) {
+    public Optional<Tag> update(Tag var) {
         throw new UnsupportedOperationException();
     }
 

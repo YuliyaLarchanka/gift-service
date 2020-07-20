@@ -5,12 +5,8 @@ import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.entity.Certificate;
 import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.CertificateService;
-import com.epam.esm.service.dto.CertificateDto;
-import com.epam.esm.service.dto.CertificatePatchDto;
-import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
 import com.epam.esm.service.exception.WrongFilterOrderException;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -24,40 +20,31 @@ import java.util.stream.Collectors;
 public class CertificateServiceImpl implements CertificateService {
     private final CertificateRepository certificateRepository;
     private final TagRepository tagRepository;
-    private final ModelMapper modelMapper;
 
-    public CertificateServiceImpl(CertificateRepository certificateRepository, TagRepository tagRepository, ModelMapper modelMapper) {
+    public CertificateServiceImpl(CertificateRepository certificateRepository, TagRepository tagRepository) {
         this.certificateRepository = certificateRepository;
         this.tagRepository = tagRepository;
-        this.modelMapper = modelMapper;
     }
 
     @Override
     @Transactional
-    public CertificateDto create(CertificateDto certificateDto) {
-        Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
-        certificate = certificateRepository.create(certificate);
-        return convertCertificateToDto(certificate);
+    public Certificate create(Certificate certificate) {
+        return certificateRepository.create(certificate);
     }
 
     @Override
-    public List<CertificateDto> findAll() {
-        List<Certificate> certificateList = certificateRepository.findAll();
-        return certificateList
-                .stream().map(this::convertCertificateToDto).collect(Collectors.toList());
+    public List<Certificate> findAll() {
+        return certificateRepository.findAll();
     }
 
     @Override
-    public Optional<CertificateDto> findById(Long id) {
-        Optional<Certificate> certificateOptional = certificateRepository.findById(id);
-        return certificateOptional.map(this::convertCertificateToDto);
+    public Optional<Certificate> findById(Long id) {
+        return certificateRepository.findById(id);
     }
 
     @Override
     @Transactional
-    public Optional<CertificateDto> update(CertificateDto certificateDto) {
-        Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
-
+    public Optional<Certificate> update(Certificate certificate) {
         Optional<Certificate> existedCertificateOptional = certificateRepository.findById(certificate.getId());
         if (existedCertificateOptional.isEmpty()) {
             return Optional.empty();
@@ -71,13 +58,11 @@ public class CertificateServiceImpl implements CertificateService {
         List<Tag> tagList = certificate.getTagList();
         tagList = tagList.stream().map(tagRepository::createTagIfNotExist).collect(Collectors.toList());
         existedCertificate.setTagList(tagList);
-        Optional<Certificate> updatedCertificateOptional = certificateRepository.update(existedCertificate);
-        return updatedCertificateOptional.map(this::convertCertificateToDto);
+        return certificateRepository.update(existedCertificate);
     }
 
     @Override
-    public Optional<CertificateDto> updateOneField(CertificatePatchDto certificatePatchDto) {
-        Certificate certificate = modelMapper.map(certificatePatchDto, Certificate.class);
+    public Optional<Certificate> updateOneField(Certificate certificate) {
         Optional<Certificate> certificateToUpdateOptional = certificateRepository.findById(certificate.getId());
         if (certificateToUpdateOptional.isEmpty()) {
             throw new RuntimeException();//TODO: create exception
@@ -100,21 +85,7 @@ public class CertificateServiceImpl implements CertificateService {
             throw new RuntimeException();//TODO: create exception
         }
 
-        Optional<Certificate> updatedCertificateOptional = certificateRepository.update(certificateToUpdate);
-        return updatedCertificateOptional.map(this::convertCertificateToDto);
-    }
-
-    public CertificateDto convertCertificateToDto(Certificate certificate) {
-        List<TagDto> tagDtoList = convertTagsListToDto(certificate);
-        CertificateDto certificateDto = modelMapper.map(certificate, CertificateDto.class);
-        certificateDto.setTagDtoList(tagDtoList);
-        return certificateDto;
-    }
-
-    private List<TagDto> convertTagsListToDto(Certificate certificate) {
-        return certificate.getTagList().stream()
-                .map(tag -> modelMapper.map(tag, TagDto.class))
-                .collect(Collectors.toList());
+        return certificateRepository.update(certificateToUpdate);
     }
 
     @Override
@@ -128,13 +99,17 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public List<CertificateDto> filterCertificates(String tagName, String descriptionPart, String order) {
+    public List<Certificate> filterCertificates(String tagName, String descriptionPart, String order) {
         if (!StringUtils.isEmpty(order) && !"desc".equalsIgnoreCase(order) && !"asc".equalsIgnoreCase(order)) {
             throw new WrongFilterOrderException("Wrong filter order '" + order + "' ");
         }
-        List<Certificate> certificateList = certificateRepository.filterCertificates(tagName, descriptionPart, order);
-        return certificateList
-                .stream().map(this::convertCertificateToDto).collect(Collectors.toList());
+        return certificateRepository.filterCertificates(tagName, descriptionPart, order);
     }
+
+    //@Override
+    //    public Order create(OrderDtoDto orderDto) {
+    //   Order order =
+    //      return orderService.create(order);
+    //    }
 
 }

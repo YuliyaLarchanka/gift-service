@@ -11,13 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "gift_certificate")
+@Table(name = "certificate")
 public class Certificate {
-    private static final Logger logger = LogManager.getLogger();
-
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "gift_certificate_id")
+    @Column(name = "certificate_id")
     private Long id;
 
     @Column(name = "name")
@@ -40,10 +38,12 @@ public class Certificate {
 
     @ManyToMany
     @JoinTable(
-            name = "gift_certificate_m2m_tag",
-            joinColumns = @JoinColumn(name = "gift_certificate_id"),
+            name = "certificate_m2m_tag",
+            joinColumns = @JoinColumn(name = "certificate_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<Tag> tagList = new ArrayList<>();
+
+    private static final Logger logger = LogManager.getLogger();
 
     public Long getId() {
         return id;

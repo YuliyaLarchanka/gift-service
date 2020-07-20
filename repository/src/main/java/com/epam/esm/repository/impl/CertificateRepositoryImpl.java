@@ -30,7 +30,7 @@ public class CertificateRepositoryImpl implements CertificateRepository {
 
     @Override
     public Certificate create(Certificate certificate) {
-        List<Tag> tagList = certificate.getTagList();
+        List<Tag> tagList = certificate.getTagList();//TODO remove to service
         if (!tagList.isEmpty()) {
             tagList = tagList.stream()
                     .map(tagRepository::createTagIfNotExist)
@@ -81,30 +81,32 @@ public class CertificateRepositoryImpl implements CertificateRepository {
 
     @Override
     public List<Certificate> filterCertificates(String tagName, String descriptionPart, String order) {
-        StringBuilder sql = new StringBuilder("SELECT g.gift_certificate_id, g.name, g.description, g.price," +
-                " g.date_of_creation, g.date_of_modification, g.duration_in_days FROM ");
+        StringBuilder sql = new StringBuilder("SELECT c.certificate_id, c.name, c.description, c.price," +
+                " c.date_of_creation, c.date_of_modification, c.duration_in_days FROM ");
 
         if (descriptionPart != null) {
-            sql.append("\"filter_by_text\"('").append(descriptionPart).append("') as g");
+            sql.append("\"filter_by_text\"(\"").append(descriptionPart).append("\") as c");
         } else {
-            sql.append("gift_certificate as g");
+            sql.append("certificate as c");
         }
 
         if (tagName != null) {
             Optional<Tag> tagOptional = tagRepository.findByName(tagName);
             if (tagOptional.isPresent()) {
                 long id = tagOptional.get().getId();
-                sql.append(" JOIN gift_certificate_m2m_tag as m2m " +
-                        "ON m2m.gift_certificate_id = g.gift_certificate_id and m2m.tag_id = ").append(id);
+                sql.append(" JOIN certificate_m2m_tag as m2m " +
+                        "ON m2m.certificate_id = c.certificate_id and m2m.tag_id = ").append(id);
             } else {
                 return Collections.emptyList();
             }
         }
 
         if (order != null) {
-            sql.append(" ORDER BY g.date_of_creation ").append(order.toUpperCase());
+            sql.append(" ORDER BY c.date_of_creation ").append(order.toUpperCase());
         }
 
         return em.createQuery(sql.toString()).getResultList();
+//        return jdbcTemplate.query(sql.toString(), new CertificateRowMapper());
+
     }
 }

@@ -1,8 +1,6 @@
 package com.epam.esm.repository.entity;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "tag")
@@ -15,8 +13,8 @@ public class Tag {
     @Column(name = "name")
     private String name;
 
-    @ManyToMany(mappedBy = "tagList")
-    private List<Certificate> certificateList = new ArrayList<>();
+//    @ManyToMany(mappedBy = "tagList")
+//    private List<Certificate> certificates = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -33,4 +31,12 @@ public class Tag {
     public void setName(String name) {
         this.name = name;
     }
+
+//    public List<Certificate> getCertificates() {
+//        return certificates;
+//    }
+//
+//    public void setCertificates(List<Certificate> certificates) {
+//        this.certificates = certificates;
+//    }
 }
