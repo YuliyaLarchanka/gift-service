@@ -1,6 +1,5 @@
 package com.epam.esm.repository.impl;
 
-import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.OrderRepository;
 import com.epam.esm.repository.entity.Order;
 import org.springframework.stereotype.Repository;
@@ -15,14 +14,8 @@ import java.util.stream.Collectors;
 
 @Repository
 public class OrderRepositoryImpl implements OrderRepository {
-    private final CertificateRepository certificateRepository;
-
     @PersistenceContext
     private EntityManager em;
-
-    public OrderRepositoryImpl(CertificateRepository certificateRepository) {
-        this.certificateRepository = certificateRepository;
-    }
 
     @Override
     public Order create(Order order) {
@@ -62,8 +55,18 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Optional<Order> findPriceAndTimestampOfOrder(Long accountId, Long orderId){
         String sql = "SELECT o FROM Order o WHERE o.account.id = ?1 and o.id = ?2";
+
         Query query = em.createQuery(sql, Order.class);
         Order order =  (Order) query.setParameter(1, accountId).setParameter(2, orderId).getSingleResult();
+        return Optional.of(order);
+    }
+
+    @Override
+    public Optional<Order> findHighestPriceOrder(Long id){
+        String sql = "SELECT o FROM Order o WHERE o.price = (SELECT MAX(x.price) " +
+                "FROM Order x WHERE x.account.id = ?1)";
+        Query query = em.createQuery(sql, Order.class);
+        Order order =  (Order) query.setParameter(1, id).setMaxResults(1).getSingleResult();
         return Optional.of(order);
     }
 }

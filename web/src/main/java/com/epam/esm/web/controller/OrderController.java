@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,13 +32,21 @@ public class OrderController {
     }
 
     @GetMapping("accounts/{accountId}/orders")
-    public List<OrderDto> findOrdersByAccountId(@PathVariable @Min(value = 1, message = "Id should be greater than zero") long accountId) {
+    public List<OrderDto> findOrdersByAccountId(@PathVariable @Min(value = 1, message = "Id should be greater than zero") long accountId,
+                                                @RequestParam(required = false) String filter) {
+
+        if (filter!=null && filter.equalsIgnoreCase("highestPrice")){
+            Order order = orderService.findHighestPriceOrder(accountId);
+            List<OrderDto> orderDtos= new ArrayList<>();
+            orderDtos.add(orderMapper.orderToOrderDtoPriceTimestamp(order));
+            return orderDtos;
+        }
         return orderService.findOrdersByAccountId(accountId).stream().map(orderMapper::orderToOrderDto).collect(Collectors.toList());
     }
 
     @GetMapping("accounts/{accountId}/orders/{orderId}")
-        public OrderDto findPriceAndDateOfOrder(@PathVariable long accountId, @PathVariable long orderId){
+        public OrderDto findPriceAndTimestampOfOrder(@PathVariable long accountId, @PathVariable long orderId){
             Order order = orderService.findPriceAndTimestampOfOrder(accountId, orderId);
             return orderMapper.orderToOrderDtoPriceTimestamp(order);
-        }
+    }
 }

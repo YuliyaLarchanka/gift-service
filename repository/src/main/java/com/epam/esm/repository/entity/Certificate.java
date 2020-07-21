@@ -122,4 +122,36 @@ public class Certificate {
         System.out.println("UPDATE");
         setDateOfModification(LocalDateTime.now(ZoneOffset.UTC));
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Certificate that = (Certificate) o;
+
+        if (durationInDays != that.durationInDays) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (price != null ? !price.equals(that.price) : that.price != null) return false;
+        if (dateOfCreation != null ? !dateOfCreation.equals(that.dateOfCreation) : that.dateOfCreation != null)
+            return false;
+        if (dateOfModification != null ? !dateOfModification.equals(that.dateOfModification) : that.dateOfModification != null)
+            return false;
+        return tagList != null ? tagList.equals(that.tagList) : that.tagList == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (price != null ? price.hashCode() : 0);
+        result = 31 * result + (dateOfCreation != null ? dateOfCreation.hashCode() : 0);
+        result = 31 * result + (dateOfModification != null ? dateOfModification.hashCode() : 0);
+        result = 31 * result + (int) durationInDays;
+        result = 31 * result + (tagList != null ? tagList.hashCode() : 0);
+        return result;
+    }
 }

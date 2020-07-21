@@ -52,4 +52,26 @@ public class Account {
     public void setOrders(List<Order> orders) {
         this.orders = orders;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Account account = (Account) o;
+
+        if (id != null ? !id.equals(account.id) : account.id != null) return false;
+        if (login != null ? !login.equals(account.login) : account.login != null) return false;
+        if (role != account.role) return false;
+        return orders != null ? orders.equals(account.orders) : account.orders == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (login != null ? login.hashCode() : 0);
+        result = 31 * result + (role != null ? role.hashCode() : 0);
+        result = 31 * result + (orders != null ? orders.hashCode() : 0);
+        return result;
+    }
 }

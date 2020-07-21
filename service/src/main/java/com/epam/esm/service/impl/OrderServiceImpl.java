@@ -104,4 +104,13 @@ public class OrderServiceImpl implements OrderService {
          }
          return orderOptional.get();
     }
+
+    @Override
+    public Order findHighestPriceOrder(Long id){
+        Optional<Order> orderOptional = orderRepository.findHighestPriceOrder(id);
+        if(orderOptional.isEmpty()){
+            throw new RuntimeException();//TODO
+        }
+        return orderOptional.get();
+    }
 }
