@@ -2,13 +2,12 @@ package com.epam.esm.service.impl;
 
 import com.epam.esm.repository.AccountRepository;
 import com.epam.esm.repository.entity.Account;
+import com.epam.esm.repository.entity.Page;
 import com.epam.esm.repository.entity.RoleEnum;
 import com.epam.esm.service.AccountService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,8 +32,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<Account> findAll() {
-        return new ArrayList<>();
+    public Page<Account> findAll(int page, int size) {
+        return new Page<>();
     }
 
     @Override

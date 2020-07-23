@@ -2,13 +2,12 @@ package com.epam.esm.repository.impl;
 
 import com.epam.esm.repository.AccountRepository;
 import com.epam.esm.repository.entity.Account;
+import com.epam.esm.repository.entity.Page;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -34,8 +33,8 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public List<Account> findAll() {
-        return new ArrayList<>();
+    public Page findAll(int page, int size) {
+        return new Page();
     }
 
     @Override

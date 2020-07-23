@@ -1,6 +1,7 @@
 package com.epam.esm.repository.impl;
 
 import com.epam.esm.repository.TagRepository;
+import com.epam.esm.repository.entity.Page;
 import com.epam.esm.repository.entity.Tag;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
@@ -28,9 +29,22 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public List<Tag> findAll() {
+    public Page<Tag> findAll(int pageCount, int entitiesPerPage ) {
+        int totalCount = ((Long)em.createQuery("select count(t) from Tag t").getSingleResult()).intValue();
+        int offset = (pageCount - 1) * entitiesPerPage;
+        boolean hasNext = totalCount > offset + entitiesPerPage;
+        boolean hasPrevious = pageCount > 1;
+
+        Page<Tag> page = new Page();
+        page.setTotalCount(totalCount);
+        page.setOffset(offset);
+        page.setHasNext(hasNext);
+        page.setHasPrevious(hasPrevious);
+
         Query query = em.createQuery("select t from Tag t");
-        return query.getResultList();
+        List<Tag> tags = query.setFirstResult(offset).setMaxResults(entitiesPerPage).getResultList();
+        page.setContent(tags);
+        return page;
     }
 
     @Override

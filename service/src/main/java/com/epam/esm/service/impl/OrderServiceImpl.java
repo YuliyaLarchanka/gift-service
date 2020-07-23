@@ -1,11 +1,11 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.repository.AccountRepository;
-import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.OrderRepository;
 import com.epam.esm.repository.entity.Account;
 import com.epam.esm.repository.entity.Certificate;
 import com.epam.esm.repository.entity.Order;
+import com.epam.esm.repository.entity.Page;
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.OrderService;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,14 +22,12 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final AccountRepository accountRepository;
-    private final CertificateRepository certificateRepository;
     private final CertificateService certificateService;
 
     public OrderServiceImpl(OrderRepository orderRepository, AccountRepository accountRepository,
-                            CertificateRepository certificateRepository, CertificateService certificateService) {
+                             CertificateService certificateService) {
         this.orderRepository = orderRepository;
         this.accountRepository = accountRepository;
-        this.certificateRepository = certificateRepository;
         this.certificateService = certificateService;
     }
 
@@ -77,8 +74,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> findAll() {
-        return new ArrayList<>();
+    public Page<Order> findAll(int page, int size) {
+        return new Page<>();
     }
 
     @Override

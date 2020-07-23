@@ -1,12 +1,13 @@
 package com.epam.esm.repository;
 
-import java.util.List;
+import com.epam.esm.repository.entity.Page;
+
 import java.util.Optional;
 
 public interface ApiRepository<T, ID>{
     T create(T var);
 
-    List<T> findAll();
+    Page findAll(int page, int size);
 
     Optional<T> findById(ID var);
 

@@ -3,6 +3,7 @@ package com.epam.esm.service.impl;
 import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.entity.Certificate;
+import com.epam.esm.repository.entity.Page;
 import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
@@ -33,8 +34,8 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public List<Certificate> findAll() {
-        return certificateRepository.findAll();
+    public Page<Certificate> findAll(int page, int size) {
+        return certificateRepository.findAll(page, size);
     }
 
     @Override

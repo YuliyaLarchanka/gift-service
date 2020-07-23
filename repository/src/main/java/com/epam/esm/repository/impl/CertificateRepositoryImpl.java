@@ -3,6 +3,7 @@ package com.epam.esm.repository.impl;
 import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.entity.Certificate;
+import com.epam.esm.repository.entity.Page;
 import com.epam.esm.repository.entity.Tag;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
@@ -42,9 +43,9 @@ public class CertificateRepositoryImpl implements CertificateRepository {
     }
 
     @Override
-    public List<Certificate> findAll() {
+    public Page findAll(int page, int size) {
         Query query = em.createQuery("select c from Certificate c");
-        return query.getResultList();
+        return new Page();
     }
 
     @Override

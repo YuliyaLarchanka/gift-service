@@ -2,12 +2,12 @@ package com.epam.esm.repository.impl;
 
 import com.epam.esm.repository.OrderRepository;
 import com.epam.esm.repository.entity.Order;
+import com.epam.esm.repository.entity.Page;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,8 +30,8 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<Order> findAll() {
-        return new ArrayList<>();
+    public Page findAll(int page, int size) {
+        return new Page();
     }
 
     @Override

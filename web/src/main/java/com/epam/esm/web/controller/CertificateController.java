@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,8 +38,9 @@ public class CertificateController {
     }
 
     @GetMapping
-    public List<CertificateDto> find() {
-        return certificateService.findAll().stream().map(this::convertCertificateToDto).collect(Collectors.toList());
+    public List<CertificateDto> find(@PathVariable @NotNull int page, @PathVariable @NotNull int size) {
+        return null;
+        //return certificateService.findAll(page, size).stream().map(this::convertCertificateToDto).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")

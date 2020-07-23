@@ -2,9 +2,12 @@ package com.epam.esm.web.mapper;
 
 import com.epam.esm.repository.entity.Account;
 import com.epam.esm.repository.entity.Order;
+import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.web.dto.AccountDto;
 import com.epam.esm.web.dto.OrderDto;
+import com.epam.esm.web.dto.TagDto;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
@@ -25,4 +28,13 @@ public interface OrderMapper {
         orderDto.setCertificates(null);
         return orderDto;
     }
+
+    @Mapping(target = "links", ignore = true)
+    TagDto tagToTagDto(Tag tag);
+
+    @Mapping(target = "certificates", ignore = true)
+    Tag tagDtoToTag(TagDto tagDto);
+
+    @Mapping(target = "orders", ignore = true)
+    Account accountDtoToAccount(AccountDto accountDto);
 }

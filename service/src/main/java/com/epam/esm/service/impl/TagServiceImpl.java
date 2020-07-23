@@ -1,6 +1,7 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.repository.TagRepository;
+import com.epam.esm.repository.entity.Page;
 import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.TagService;
 import com.epam.esm.service.exception.DuplicateEntityException;
@@ -8,7 +9,6 @@ import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,8 +30,8 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<Tag> findAll() {
-        return tagRepository.findAll();
+    public Page<Tag> findAll(int page, int size) {
+        return tagRepository.findAll(page, size);
     }
 
     @Override
