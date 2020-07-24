@@ -100,17 +100,27 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public List<Certificate> filterCertificates(String tagName, String descriptionPart, String order) {
+    public Certificate filterCertificatesByTagAndPrice(String tagName, String price){
+        if (!StringUtils.isEmpty(price) && !"max".equalsIgnoreCase(price) && !"min".equalsIgnoreCase(price)) {
+            throw new WrongFilterOrderException("Wrong filter order '" + price + "' ");//TODO change exception
+        }
+
+        price = price.equalsIgnoreCase("min")? "asc" : "desc";
+        Optional<Certificate> certificateOptional = certificateRepository.filterCertificatesByTagAndPrice(tagName, price);
+
+        if(certificateOptional.isEmpty()){
+            throw new RuntimeException();//TODO add exception
+        }
+        return certificateOptional.get();
+    }
+
+
+    @Override
+    public List<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order) {
         if (!StringUtils.isEmpty(order) && !"desc".equalsIgnoreCase(order) && !"asc".equalsIgnoreCase(order)) {
             throw new WrongFilterOrderException("Wrong filter order '" + order + "' ");
         }
-        return certificateRepository.filterCertificates(tagName, descriptionPart, order);
+        return certificateRepository.filterCertificatesByTagAndDescription(tagName, descriptionPart, order);
     }
-
-    //@Override
-    //    public Order create(OrderDtoDto orderDto) {
-    //   Order order =
-    //      return orderService.create(order);
-    //    }
 
 }

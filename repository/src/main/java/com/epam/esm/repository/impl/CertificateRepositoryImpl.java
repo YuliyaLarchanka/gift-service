@@ -80,13 +80,25 @@ public class CertificateRepositoryImpl implements CertificateRepository {
         em.remove(certificate);
     }
 
+    public Optional<Certificate> filterCertificatesByTagAndPrice(String tagName, String price){
+        String jpql = "select c from Certificate c JOIN c.tagList t ON t.name  = ?1 order by c.price " + price;
+        Query query = em.createQuery(jpql, Certificate.class);
+        try {
+            Certificate certificate = (Certificate)query.setParameter(1, tagName).setMaxResults(1).getSingleResult();
+            return Optional.of(certificate);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+
     @Override
-    public List<Certificate> filterCertificates(String tagName, String descriptionPart, String order) {
+    public List<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order) {
         StringBuilder sql = new StringBuilder("SELECT c.certificate_id, c.name, c.description, c.price," +
                 " c.date_of_creation, c.date_of_modification, c.duration_in_days FROM ");
 
         if (descriptionPart != null) {
-            sql.append("\"filter_by_text\"(\"").append(descriptionPart).append("\") as c");
+            sql.append("filter_by_text('").append(descriptionPart).append("') as c");
         } else {
             sql.append("certificate as c");
         }
@@ -105,9 +117,6 @@ public class CertificateRepositoryImpl implements CertificateRepository {
         if (order != null) {
             sql.append(" ORDER BY c.date_of_creation ").append(order.toUpperCase());
         }
-
-        return em.createQuery(sql.toString()).getResultList();
-//        return jdbcTemplate.query(sql.toString(), new CertificateRowMapper());
-
+        return em.createNativeQuery(sql.toString(), Certificate.class).getResultList();
     }
 }

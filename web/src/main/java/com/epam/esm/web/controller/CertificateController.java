@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,10 +78,20 @@ public class CertificateController {
     @GetMapping("/filter")
     public List<CertificateDto> filter(@RequestParam(required = false) String tagName,
                                                    @RequestParam(required = false) String descriptionPart,
-                                                   @RequestParam(required = false) String order) {
-        return certificateService.filterCertificates(tagName, descriptionPart, order)
+                                                   @RequestParam(required = false) String order, @RequestParam(required = false) String price) {
+
+        if(price!= null && tagName!=null){
+            List<CertificateDto> certificateDtos = new ArrayList<>();
+            CertificateDto certificateDto = convertCertificateToDto(certificateService.filterCertificatesByTagAndPrice(tagName, price));
+            certificateDtos.add(certificateDto);
+            return certificateDtos;
+
+        }
+        return certificateService.filterCertificatesByTagAndDescription(tagName, descriptionPart, order)
                 .stream().map(this::convertCertificateToDto).collect(Collectors.toList());
     }
+
+
 
     protected CertificateDto convertCertificateToDto(Certificate certificate) {
         List<TagDto> tagDtoList = convertTagsListToDto(certificate);

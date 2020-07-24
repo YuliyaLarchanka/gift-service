@@ -7,7 +7,9 @@ import java.util.Optional;
 
 
 public interface CertificateService extends ApiService<Certificate, Long> {
-    List<Certificate> filterCertificates(String tagName, String descriptionPart, String order);
+    Certificate filterCertificatesByTagAndPrice(String tagName, String price);
+
+    List<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order);
 
     Optional<Certificate> updateOneField(Certificate certificate);
 }
