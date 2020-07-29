@@ -6,8 +6,10 @@ import com.epam.esm.repository.entity.Certificate;
 import com.epam.esm.repository.entity.Page;
 import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.CertificateService;
-import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
+import com.epam.esm.service.exception.EmptyUpdateParameterException;
+import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.WrongFilterOrderException;
+import com.epam.esm.service.exception.WrongPriceValueParameter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -18,35 +20,44 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class CertificateServiceImpl implements CertificateService {
-    private final CertificateRepository certificateRepository;
+public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, CertificateRepository> implements CertificateService {
     private final TagRepository tagRepository;
 
     public CertificateServiceImpl(CertificateRepository certificateRepository, TagRepository tagRepository) {
-        this.certificateRepository = certificateRepository;
+        super(certificateRepository);
         this.tagRepository = tagRepository;
     }
 
     @Override
     @Transactional
     public Certificate create(Certificate certificate) {
-        return certificateRepository.create(certificate);
+        List<Tag> tagList = certificate.getTagList();
+        if (!tagList.isEmpty()) {
+            tagList = tagList.stream()
+                    .map(this::createTagIfNotExist)
+                    .collect(Collectors.toList());
+        }
+        certificate.setTagList(tagList);
+        return repository.create(certificate);
     }
 
-    @Override
-    public Page<Certificate> findAll(int page, int size) {
-        return certificateRepository.findAll(page, size);
-    }
+    private Tag createTagIfNotExist(Tag tag){
+        Tag tagToCreate = new Tag();
+        String name = tag.getName();
+        tagToCreate.setName(name);
 
-    @Override
-    public Optional<Certificate> findById(Long id) {
-        return certificateRepository.findById(id);
+        Optional<Tag> tagOptional = tagRepository.findByName(name);
+        if (tagOptional.isEmpty()){
+            return tagRepository.create(tagToCreate);
+        }
+
+        return tagOptional.get();
     }
 
     @Override
     @Transactional
     public Optional<Certificate> update(Certificate certificate) {
-        Optional<Certificate> existedCertificateOptional = certificateRepository.findById(certificate.getId());
+        Optional<Certificate> existedCertificateOptional = repository.findById(certificate.getId(), Certificate.class);
         if (existedCertificateOptional.isEmpty()) {
             return Optional.empty();
         }
@@ -57,16 +68,16 @@ public class CertificateServiceImpl implements CertificateService {
         existedCertificate.setDurationInDays(certificate.getDurationInDays());
 
         List<Tag> tagList = certificate.getTagList();
-        tagList = tagList.stream().map(tagRepository::createTagIfNotExist).collect(Collectors.toList());
+        tagList = tagList.stream().map(this::createTagIfNotExist).collect(Collectors.toList());
         existedCertificate.setTagList(tagList);
-        return certificateRepository.update(existedCertificate);
+        return repository.update(existedCertificate);
     }
 
     @Override
     public Optional<Certificate> updateOneField(Certificate certificate) {
-        Optional<Certificate> certificateToUpdateOptional = certificateRepository.findById(certificate.getId());
+        Optional<Certificate> certificateToUpdateOptional = repository.findById(certificate.getId(), Certificate.class);
         if (certificateToUpdateOptional.isEmpty()) {
-            throw new RuntimeException();//TODO: create exception
+            return Optional.empty();
         }
         Certificate certificateToUpdate = certificateToUpdateOptional.get();
 
@@ -83,44 +94,41 @@ public class CertificateServiceImpl implements CertificateService {
         }else if(durationInDays!=0){
             certificateToUpdate.setDurationInDays(durationInDays);
         } else{
-            throw new RuntimeException();//TODO: create exception
+            throw new EmptyUpdateParameterException("Empty or invalid field value");
         }
 
-        return certificateRepository.update(certificateToUpdate);
+        return repository.update(certificateToUpdate);
     }
 
     @Override
-    @Transactional
-    public void delete(Long id) {
-        Optional<Certificate> certificateOptional = certificateRepository.findById(id);
-        if (certificateOptional.isEmpty()) {
-            throw new EntityToDeleteNotFoundException("Certificate with this id is not found");
-        }
-        certificateRepository.delete(certificateOptional.get());
-    }
-
-    @Override
-    public Certificate filterCertificatesByTagAndPrice(String tagName, String price){
+    public Page<Certificate> filterCertificatesByTagAndPrice(String tagName, String price){
         if (!StringUtils.isEmpty(price) && !"max".equalsIgnoreCase(price) && !"min".equalsIgnoreCase(price)) {
-            throw new WrongFilterOrderException("Wrong filter order '" + price + "' ");//TODO change exception
+            throw new WrongPriceValueParameter("Wrong price parameter value '" + price + "' ");
+        }
+
+        Optional<Tag> tagOptional = tagRepository.findByName(tagName);
+        if(tagOptional.isEmpty()){
+            throw new EntityNotFoundException("Tag with such name is not found");
         }
 
         price = price.equalsIgnoreCase("min")? "asc" : "desc";
-        Optional<Certificate> certificateOptional = certificateRepository.filterCertificatesByTagAndPrice(tagName, price);
-
-        if(certificateOptional.isEmpty()){
-            throw new RuntimeException();//TODO add exception
-        }
-        return certificateOptional.get();
+        return repository.filterCertificatesByTagAndPrice(tagName, price);
     }
 
 
     @Override
-    public List<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order) {
+    public Page<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order, int page, int size) {
         if (!StringUtils.isEmpty(order) && !"desc".equalsIgnoreCase(order) && !"asc".equalsIgnoreCase(order)) {
             throw new WrongFilterOrderException("Wrong filter order '" + order + "' ");
         }
-        return certificateRepository.filterCertificatesByTagAndDescription(tagName, descriptionPart, order);
+
+        if (tagName!=null){
+            Optional<Tag> tagOptional = tagRepository.findByName(tagName);
+            if(tagOptional.isEmpty()){
+                throw new EntityNotFoundException("Tag with such name is not found");
+            }
+        }
+        return repository.filterCertificatesByTagAndDescription(tagName, descriptionPart, order, page, size);
     }
 
 }

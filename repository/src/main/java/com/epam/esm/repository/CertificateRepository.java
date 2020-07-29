@@ -1,14 +1,9 @@
 package com.epam.esm.repository;
 
 import com.epam.esm.repository.entity.Certificate;
-
-import java.util.List;
-import java.util.Optional;
+import com.epam.esm.repository.entity.Page;
 
 public interface CertificateRepository extends ApiRepository<Certificate, Long> {
-    Optional<Certificate> findByName(String name);
-
-    Optional<Certificate> filterCertificatesByTagAndPrice(String tagName, String price);
-    List<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order);
-
+    Page<Certificate> filterCertificatesByTagAndPrice(String tagName, String price);
+    Page<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order, int page, int size);
 }

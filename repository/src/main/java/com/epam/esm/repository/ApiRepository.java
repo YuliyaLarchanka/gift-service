@@ -7,9 +7,9 @@ import java.util.Optional;
 public interface ApiRepository<T, ID>{
     T create(T var);
 
-    Page findAll(int page, int size);
+    Page<T> findAll(int page, int size);
 
-    Optional<T> findById(ID var);
+    Optional<T> findById(ID id, Class<T> clazz);
 
     Optional<T> update(T var);
 

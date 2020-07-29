@@ -9,14 +9,14 @@ import java.time.LocalDateTime;
 public class CertificatePatchDto {
     private Long id;
 
-    @Size(min = 2, max = 60)
+    @Size(min = 2, max = 35, message = "Name can't be less than 2 and more than 35 letters. ")
     private String name;
 
-    @Size(min = 10, max = 60)
+    @Size(min = 10, max = 60, message = "Description can't be less than 10 and more than 60 letters. ")
     private String description;
 
-    @DecimalMin(value = "1.0", message = "Price can't be lower than 5$")
-    @Digits(integer = 5, fraction = 2, message = "No more than 3 character")
+    @DecimalMin(value = "1.0", message = "Price can't be lower than 1$. ")
+    @Digits(integer = 5, fraction = 2, message = "Price can't be more than 99999.99 .And only 2 values after point.")
     private BigDecimal price;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -25,8 +25,8 @@ public class CertificatePatchDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateOfModification;
 
-    @Min(value = 1, message = "Duration can't be less than a day")
-    @Max(value = 365, message = "Duration can't be more than a year(365 days)")
+    @Min(value = 1, message = "Duration can't be less than a day. ")
+    @Max(value = 365, message = "Duration can't be more than a year(365 days). ")
     private Short durationInDays;
 
     public Long getId() {

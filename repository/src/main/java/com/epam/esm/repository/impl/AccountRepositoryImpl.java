@@ -2,19 +2,23 @@ package com.epam.esm.repository.impl;
 
 import com.epam.esm.repository.AccountRepository;
 import com.epam.esm.repository.entity.Account;
-import com.epam.esm.repository.entity.Page;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.util.Optional;
 
 @Repository
-public class AccountRepositoryImpl implements AccountRepository {
-
+public class AccountRepositoryImpl extends ApiRepositoryImpl<Account, Long> implements AccountRepository {
     @PersistenceContext
     private EntityManager em;
+
+    @Override
+    protected String getClassName() {
+        return "Account";
+    }
 
     @Override
     public Account create(Account account) {
@@ -23,27 +27,18 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public Optional<Account> findById(Long id) {
+    public Optional<Account> findByName(String login){
+        Query query = em.createQuery("select t from Account t where t.login = ?1", Account.class);
         try {
-            Account account = em.find(Account.class, id);
-            return Optional.ofNullable(account);
-        } catch (EmptyResultDataAccessException e) {
+            Account account = (Account) query.setParameter(1, login).getSingleResult();
+            return Optional.of(account);
+        } catch (NoResultException e) {
             return Optional.empty();
         }
     }
 
     @Override
-    public Page findAll(int page, int size) {
-        return new Page();
-    }
-
-    @Override
     public Optional<Account> update(Account account) {
         return Optional.of(new Account());
-    }
-
-    @Override
-    public void delete(Account order) {
-        //
     }
 }
