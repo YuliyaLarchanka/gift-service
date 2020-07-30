@@ -1,3 +1,10 @@
+DROP TABLE certificate_m2m_tag;
+DROP TABLE account_order_m2m_certificate;
+DROP TABLE account_order;
+DROP TABLE account;
+DROP TABLE tag;
+DROP TABLE certificate;
+
 CREATE TABLE certificate (
   certificate_id serial PRIMARY KEY,
   name varchar(60) NOT NULL,
@@ -41,7 +48,8 @@ $func$  LANGUAGE plpgsql;
 
 CREATE TABLE account (
   account_id serial PRIMARY KEY,
-  login varchar(20) NOT NULL UNIQUE,
+  login varchar(100) NOT NULL UNIQUE,
+  password varchar(250) NOT NULL,
   role smallint NOT NULL
 );
 

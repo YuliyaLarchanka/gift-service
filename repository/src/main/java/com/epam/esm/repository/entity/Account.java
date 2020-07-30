@@ -15,6 +15,9 @@ public class Account {
     @Column(name = "login")
     private String login;
 
+    @Column(name = "password")
+    private String password;
+
     @Column(name = "role")
     private RoleEnum role;
 
@@ -35,6 +38,14 @@ public class Account {
 
     public void setLogin(String login) {
         this.login = login;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public RoleEnum getRole() {

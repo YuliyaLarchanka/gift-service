@@ -99,16 +99,23 @@ public class ExceptionHandlingController {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ErrorDto HandlerNotFoundHandler(NoHandlerFoundException e) {
+    public ErrorDto handlerNotFoundHandler(NoHandlerFoundException e) {
         logger.error(e);
         return new ErrorDto(NOT_FOUND_CODE, e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(EntityNotFoundException.class)
-    public ErrorDto ResourceNotFoundHandler(EntityNotFoundException e) {
+    public ErrorDto resourceNotFoundHandler(EntityNotFoundException e) {
         logger.error(e);
         return new ErrorDto(NOT_FOUND_CODE, e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(AuthenticationException.class)
+    public ErrorDto authenticationValidationHandler(AuthenticationException e) {
+        logger.error(e);
+        return new ErrorDto(UNAUTHORIZED, e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)

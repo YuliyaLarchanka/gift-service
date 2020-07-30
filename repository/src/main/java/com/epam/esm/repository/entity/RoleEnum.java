@@ -1,5 +1,5 @@
 package com.epam.esm.repository.entity;
 
 public enum RoleEnum {
-    CLIENT, MANAGER, ADMIN
+    ROLE_CLIENT, ROLE_ADMIN
 }

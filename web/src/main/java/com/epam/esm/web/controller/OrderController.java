@@ -10,6 +10,7 @@ import com.epam.esm.web.dto.OrderDto;
 import com.epam.esm.web.dto.PageDto;
 import com.epam.esm.web.mapper.OrderMapper;
 import com.epam.esm.web.mapper.PageMapper;
+import com.epam.esm.web.validator.annotation.ValidOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,7 @@ public class OrderController extends ApiController<Order, OrderDto>{
     }
 
     @PostMapping("/orders")
-        public OrderDto create(@Valid @RequestBody OrderDto orderDto) {
+        public OrderDto create(@ValidOrder @RequestBody OrderDto orderDto) {
        Order order = orderMapper.orderDtoToOrder(orderDto);
        Order createdOrder = orderService.create(order);
         return orderMapper.orderToOrderDto(createdOrder);
