@@ -1,27 +1,25 @@
 package com.epam.esm.web.controller;
 
-import com.epam.esm.service.exception.DuplicateEntityException;
-import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
-import com.epam.esm.service.exception.WrongFilterOrderException;
+import com.epam.esm.service.exception.*;
 import com.epam.esm.web.dto.ErrorDto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.epam.esm.web.util.ErrorCodes.*;
@@ -37,13 +35,6 @@ public class ExceptionHandlingController {
         return new ErrorDto(INTERNAL_SERVER_ERROR_CODE, "Something happened. We are already looking at this");
     }
 
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ErrorDto> responseStatusExceptionHandler(ResponseStatusException e) {
-        logger.error(e);
-        ErrorDto errorDto = new ErrorDto(CONFLICT_CODE, e.getReason());
-        return ResponseEntity.status(e.getStatus()).body(errorDto);
-    }
-
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ErrorDto messageNotReadableExceptionHandler(HttpMessageNotReadableException e) {
@@ -56,13 +47,32 @@ public class ExceptionHandlingController {
     public ErrorDto dtoValidationHandler(MethodArgumentNotValidException e) {
         logger.error(e);
         BindingResult result = e.getBindingResult();
-        List<FieldError> fieldErrors = result.getFieldErrors();
-        return new ErrorDto(BAD_REQUEST_CODE, "Validation error", fieldErrors);
+        Optional<String> message = result
+                .getFieldErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .filter(Objects::nonNull)
+                .reduce(String::concat);
+        return new ErrorDto(BAD_REQUEST_CODE, message.orElse("Field error"));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ErrorDto paramValidationHandler(MethodArgumentTypeMismatchException e) {
+        logger.error(e);
+        return new ErrorDto(BAD_REQUEST_CODE, e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(EmptyUpdateParameterException.class)
+    public ErrorDto paramValidationHandler(EmptyUpdateParameterException e) {
+        logger.error(e);
+        return new ErrorDto(BAD_REQUEST_CODE, e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(WrongPriceValueParameter.class)
+    public ErrorDto paramValidationHandler(WrongPriceValueParameter e) {
         logger.error(e);
         return new ErrorDto(BAD_REQUEST_CODE, e.getMessage());
     }
@@ -88,17 +98,24 @@ public class ExceptionHandlingController {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(EntityToDeleteNotFoundException.class)
-    public ErrorDto TagNotFoundHandler(EntityToDeleteNotFoundException e) {
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ErrorDto handlerNotFoundHandler(NoHandlerFoundException e) {
         logger.error(e);
         return new ErrorDto(NOT_FOUND_CODE, e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public ErrorDto ResourceNotFoundHandler(NoHandlerFoundException e) {
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ErrorDto resourceNotFoundHandler(EntityNotFoundException e) {
         logger.error(e);
         return new ErrorDto(NOT_FOUND_CODE, e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(AuthenticationException.class)
+    public ErrorDto authenticationValidationHandler(AuthenticationException e) {
+        logger.error(e);
+        return new ErrorDto(UNAUTHORIZED, e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)

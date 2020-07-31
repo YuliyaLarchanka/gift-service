@@ -1,4 +1,4 @@
-rootProject.name = 'gift_service'
+rootProject.name = 'certificate_service'
 include 'repository'
 include 'web'
 include 'service'

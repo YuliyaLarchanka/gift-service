@@ -1,16 +1,17 @@
 package com.epam.esm.repository;
 
-import java.util.List;
+import com.epam.esm.repository.entity.Page;
+
 import java.util.Optional;
 
-public interface ApiRepository<T, ID> {
+public interface ApiRepository<T, ID>{
     T create(T var);
 
-    List<T> findAll();
+    Page<T> findAll(int page, int size);
 
-    Optional<T> findById(ID var);
+    Optional<T> findById(ID id, Class<T> clazz);
 
-    T update(T var);
+    Optional<T> update(T var);
 
-    void delete(ID var);
+    void delete(T var);
 }

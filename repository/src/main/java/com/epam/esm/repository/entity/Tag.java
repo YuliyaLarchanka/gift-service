@@ -1,24 +1,28 @@
 package com.epam.esm.repository.entity;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table(name = "tag")
 public class Tag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "tag_id")
-    private long id;
+    private Long id;
 
     @Column(name = "name")
     private String name;
 
-    public long getId() {
+    @ManyToMany(mappedBy = "tagList")
+    private List<Certificate> certificates = new ArrayList<>();
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -30,6 +34,15 @@ public class Tag {
         this.name = name;
     }
 
+    public List<Certificate> getCertificates() {
+        return certificates;
+    }
+
+    public void setCertificates(List<Certificate> certificates) {
+        this.certificates = certificates;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -37,22 +50,14 @@ public class Tag {
 
         Tag tag = (Tag) o;
 
-        if (id != tag.id) return false;
+        if (id != null ? !id.equals(tag.id) : tag.id != null) return false;
         return name != null ? name.equals(tag.name) : tag.name == null;
     }
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "Tag{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
     }
 }

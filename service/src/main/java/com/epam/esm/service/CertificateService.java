@@ -1,13 +1,15 @@
 package com.epam.esm.service;
 
 import com.epam.esm.repository.entity.Certificate;
-import com.epam.esm.service.dto.CertificateDto;
+import com.epam.esm.repository.entity.Page;
 
-import java.util.List;
+import java.util.Optional;
 
 
-public interface CertificateService extends ApiService<CertificateDto, Long> {
-    CertificateDto convertCertificateToDto(Certificate certificate);
+public interface CertificateService extends ApiService<Certificate, Long> {
+    Page<Certificate> filterCertificatesByTagAndPrice(String tagName, String price);
 
-    List<CertificateDto> filterCertificates(String tagName, String textField, String order);
+    Page<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order, int page, int size);
+
+    Optional<Certificate> updateOneField(Certificate certificate);
 }

@@ -1,8 +1,5 @@
 dependencies {
     implementation('org.postgresql:postgresql:42.2.14')
-    api('org.springframework:spring-jdbc:5.2.7.RELEASE')
-    implementation('javax.persistence:persistence-api:1.0.2')
-    implementation('com.zaxxer:HikariCP:3.4.5')
-    testImplementation('org.springframework:spring-test:5.2.7.RELEASE')
-    testImplementation('com.h2database:h2:1.4.200')
+    api('org.springframework.boot:spring-boot-starter-data-jpa')
+    implementation('com.h2database:h2:1.4.200')
 }

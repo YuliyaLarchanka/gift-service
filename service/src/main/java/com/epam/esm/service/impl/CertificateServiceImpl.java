@@ -3,104 +3,132 @@ package com.epam.esm.service.impl;
 import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.entity.Certificate;
+import com.epam.esm.repository.entity.Page;
+import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.CertificateService;
-import com.epam.esm.service.dto.CertificateDto;
-import com.epam.esm.service.dto.TagDto;
-import com.epam.esm.service.exception.DuplicateEntityException;
-import com.epam.esm.service.exception.EntityToDeleteNotFoundException;
+import com.epam.esm.service.exception.EmptyUpdateParameterException;
+import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.WrongFilterOrderException;
-import org.modelmapper.ModelMapper;
+import com.epam.esm.service.exception.WrongPriceValueParameter;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class CertificateServiceImpl implements CertificateService {
-    private final CertificateRepository certificateRepository;
+public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, CertificateRepository> implements CertificateService {
     private final TagRepository tagRepository;
-    private final ModelMapper modelMapper;
 
-    public CertificateServiceImpl(CertificateRepository certificateRepository, TagRepository tagRepository, ModelMapper modelMapper) {
-        this.certificateRepository = certificateRepository;
+    public CertificateServiceImpl(CertificateRepository certificateRepository, TagRepository tagRepository) {
+        super(certificateRepository);
         this.tagRepository = tagRepository;
-        this.modelMapper = modelMapper;
     }
 
     @Override
     @Transactional
-    public CertificateDto create(CertificateDto certificateDto) {
-        Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
-        Optional<Certificate> certificateOptional = certificateRepository.findByName(certificate.getName());
-        if (certificateOptional.isPresent()) {
-            throw new DuplicateEntityException("Certificate with the same name already exists");
+    public Certificate create(Certificate certificate) {
+        List<Tag> tagList = certificate.getTagList();
+        if (!tagList.isEmpty()) {
+            tagList = tagList.stream()
+                    .map(this::createTagIfNotExist)
+                    .collect(Collectors.toList());
         }
-        certificate.setDateOfCreation(LocalDateTime.now(ZoneOffset.UTC));
-        certificate = certificateRepository.create(certificate);
-        return convertCertificateToDto(certificate);
+        certificate.setTagList(tagList);
+        return repository.create(certificate);
     }
 
-    @Override
-    public List<CertificateDto> findAll() {
-        List<Certificate> certificateList = certificateRepository.findAll();
-        return certificateList
-                .stream().map(this::convertCertificateToDto).collect(Collectors.toList());
-    }
+    private Tag createTagIfNotExist(Tag tag){
+        Tag tagToCreate = new Tag();
+        String name = tag.getName();
+        tagToCreate.setName(name);
 
-    @Override
-    public Optional<CertificateDto> findById(Long id) {
-        Optional<Certificate> certificateOptional = certificateRepository.findById(id);
-        return certificateOptional.map(this::convertCertificateToDto);
+        Optional<Tag> tagOptional = tagRepository.findByName(name);
+        if (tagOptional.isEmpty()){
+            return tagRepository.create(tagToCreate);
+        }
+
+        return tagOptional.get();
     }
 
     @Override
     @Transactional
-    public Optional<CertificateDto> update(CertificateDto certificateDto) {
-        Certificate certificate = modelMapper.map(certificateDto, Certificate.class);
-        Optional<Certificate> existedCertificate = certificateRepository.findById(certificate.getId());
-        if (existedCertificate.isEmpty()) {
+    public Optional<Certificate> update(Certificate certificate) {
+        Optional<Certificate> existedCertificateOptional = repository.findById(certificate.getId(), Certificate.class);
+        if (existedCertificateOptional.isEmpty()) {
             return Optional.empty();
         }
-        certificate.setDateOfModification(LocalDateTime.now(ZoneOffset.UTC));
-        Certificate updatedCertificate = certificateRepository.update(certificate);
-        return Optional.of(convertCertificateToDto(updatedCertificate));
-    }
+        Certificate existedCertificate = existedCertificateOptional.get();
+        existedCertificate.setName(certificate.getName());
+        existedCertificate.setDescription(certificate.getDescription());
+        existedCertificate.setPrice(certificate.getPrice());
+        existedCertificate.setDurationInDays(certificate.getDurationInDays());
 
-    public CertificateDto convertCertificateToDto(Certificate certificate) {
-        List<TagDto> tagDtoList = convertTagsListToDto(certificate);
-        CertificateDto certificateDto = modelMapper.map(certificate, CertificateDto.class);
-        certificateDto.setTagDtoList(tagDtoList);
-        return certificateDto;
-    }
-
-    private List<TagDto> convertTagsListToDto(Certificate certificate) {
-        return certificate.getTagList().stream()
-                .map(tag -> modelMapper.map(tag, TagDto.class))
-                .collect(Collectors.toList());
+        List<Tag> tagList = certificate.getTagList();
+        tagList = tagList.stream().map(this::createTagIfNotExist).collect(Collectors.toList());
+        existedCertificate.setTagList(tagList);
+        return repository.update(existedCertificate);
     }
 
     @Override
-    public void delete(Long id) {
-        Optional<Certificate> certificateOptional = certificateRepository.findById(id);
-        if (certificateOptional.isEmpty()) {
-            throw new EntityToDeleteNotFoundException("Certificate with this id is not found");
+    public Optional<Certificate> updateOneField(Certificate certificate) {
+        Optional<Certificate> certificateToUpdateOptional = repository.findById(certificate.getId(), Certificate.class);
+        if (certificateToUpdateOptional.isEmpty()) {
+            return Optional.empty();
         }
-        certificateRepository.delete(id);
+        Certificate certificateToUpdate = certificateToUpdateOptional.get();
+
+        String name = certificate.getName();
+        String description = certificate.getDescription();
+        BigDecimal price = certificate.getPrice();
+        short durationInDays = certificate.getDurationInDays();
+        if(name!=null){
+            certificateToUpdate.setName(name);
+        } else if(description!=null){
+            certificateToUpdate.setDescription(description);
+        } else if(price!=null){
+            certificateToUpdate.setPrice(price);
+        }else if(durationInDays!=0){
+            certificateToUpdate.setDurationInDays(durationInDays);
+        } else{
+            throw new EmptyUpdateParameterException("Empty or invalid field value");
+        }
+
+        return repository.update(certificateToUpdate);
     }
 
     @Override
-    public List<CertificateDto> filterCertificates(String tagName, String textField, String order) {
+    public Page<Certificate> filterCertificatesByTagAndPrice(String tagName, String price){
+        if (!StringUtils.isEmpty(price) && !"max".equalsIgnoreCase(price) && !"min".equalsIgnoreCase(price)) {
+            throw new WrongPriceValueParameter("Wrong price parameter value '" + price + "' ");
+        }
+
+        Optional<Tag> tagOptional = tagRepository.findByName(tagName);
+        if(tagOptional.isEmpty()){
+            throw new EntityNotFoundException("Tag with such name is not found");
+        }
+
+        price = price.equalsIgnoreCase("min")? "asc" : "desc";
+        return repository.filterCertificatesByTagAndPrice(tagName, price);
+    }
+
+
+    @Override
+    public Page<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order, int page, int size) {
         if (!StringUtils.isEmpty(order) && !"desc".equalsIgnoreCase(order) && !"asc".equalsIgnoreCase(order)) {
             throw new WrongFilterOrderException("Wrong filter order '" + order + "' ");
         }
-        List<Certificate> certificateList = certificateRepository.filterCertificates(tagName, textField, order);
-        return certificateList
-                .stream().map(this::convertCertificateToDto).collect(Collectors.toList());
+
+        if (tagName!=null){
+            Optional<Tag> tagOptional = tagRepository.findByName(tagName);
+            if(tagOptional.isEmpty()){
+                throw new EntityNotFoundException("Tag with such name is not found");
+            }
+        }
+        return repository.filterCertificatesByTagAndDescription(tagName, descriptionPart, order, page, size);
     }
 
 }

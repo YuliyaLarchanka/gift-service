@@ -1,16 +1,12 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '5.2.0' apply false
+    id 'java-library'
+//    id 'org.springframework.boot' version '2.3.1.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 }
 
 subprojects {
-    if (name.startsWith('web')) {
-        apply plugin: 'com.github.johnrengelman.shadow'
-        apply plugin: 'application'
-    }
-}
-
-allprojects {
     apply plugin: 'java-library'
+    apply plugin: 'io.spring.dependency-management'
 
     group = 'com.epam.esm'
     version '1.0-SNAPSHOT'
@@ -18,16 +14,26 @@ allprojects {
     repositories {
         jcenter()
     }
+
+    dependencyManagement {
+        imports {
+            mavenBom("org.springframework.boot:spring-boot-dependencies:2.3.1.RELEASE")
+        }
+    }
 }
 
 allprojects {
+    repositories {
+        jcenter()
+    }
+
     dependencies {
-        implementation('org.apache.tomcat.embed:tomcat-embed-jasper:8.5.47')
-        implementation('org.springframework:spring-webmvc:5.2.7.RELEASE')
-        implementation('com.fasterxml.jackson.core:jackson-databind:2.9.2')
+        implementation('org.springframework.boot:spring-boot-starter-parent:2.3.1.RELEASE')
+        testImplementation('org.springframework.boot:spring-boot-starter-test')
+        implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.3.1.RELEASE'
+        implementation ('io.jsonwebtoken:jjwt:0.9.1')
+        implementation group: 'org.springframework.security', name: 'spring-security-jwt', version: '1.1.1.RELEASE'
         implementation('org.apache.logging.log4j:log4j-core:2.13.3')
-        testImplementation('junit:junit:4.13')
-        testImplementation('org.mockito:mockito-core:3.3.3')
         testImplementation('org.skyscreamer:jsonassert:1.5.0')
     }
 }

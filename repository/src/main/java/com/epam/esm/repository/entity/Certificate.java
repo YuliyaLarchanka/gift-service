@@ -1,19 +1,22 @@
 package com.epam.esm.repository.entity;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "certificate")
 public class Certificate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "gift_certificate_id")
-    private long id;
+    @Column(name = "certificate_id")
+    private Long id;
 
     @Column(name = "name")
     private String name;
@@ -25,21 +28,28 @@ public class Certificate {
     private BigDecimal price;
 
     @Column(name = "date_of_creation")
-    private LocalDateTime dateOfCreation;
+    public LocalDateTime dateOfCreation;
 
     @Column(name = "date_of_modification")
-    private LocalDateTime dateOfModification;
+    public LocalDateTime dateOfModification;
 
     @Column(name = "duration_in_days")
     private short durationInDays;
 
+    @ManyToMany
+    @JoinTable(
+            name = "certificate_m2m_tag",
+            joinColumns = @JoinColumn(name = "certificate_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<Tag> tagList = new ArrayList<>();
 
-    public long getId() {
+    private static final Logger logger = LogManager.getLogger();
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -99,6 +109,20 @@ public class Certificate {
         this.tagList = tagList;
     }
 
+    @PrePersist
+    public void onPrePersist() {
+        logger.debug("INSERT");
+        System.out.println("INSERT");
+        setDateOfCreation(LocalDateTime.now(ZoneOffset.UTC));
+    }
+
+    @PreUpdate
+    public void onPreUpdate() {
+        logger.debug("UPDATE");
+        System.out.println("UPDATE");
+        setDateOfModification(LocalDateTime.now(ZoneOffset.UTC));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -106,8 +130,8 @@ public class Certificate {
 
         Certificate that = (Certificate) o;
 
-        if (id != that.id) return false;
         if (durationInDays != that.durationInDays) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (price != null ? !price.equals(that.price) : that.price != null) return false;
@@ -120,7 +144,7 @@ public class Certificate {
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (price != null ? price.hashCode() : 0);
