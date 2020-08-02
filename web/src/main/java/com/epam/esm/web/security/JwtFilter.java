@@ -43,7 +43,6 @@ public class JwtFilter extends GenericFilterBean {
             String userLogin = jwtProvider.getLoginFromToken(token);
             AuthorisedAccount authorisedAccount = detailsService.loadUserByUsername(userLogin);
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(authorisedAccount, null, authorisedAccount.getAuthorities());
-            //TODO sent auth to manager for cheking
             SecurityContextHolder.getContext().setAuthentication(auth);
         } else if(tokenRequirements){
             HttpServletResponse response = (HttpServletResponse)servletResponse;
