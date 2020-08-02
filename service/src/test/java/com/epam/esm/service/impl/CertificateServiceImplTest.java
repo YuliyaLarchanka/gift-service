@@ -1,10 +1,25 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.repository.CertificateRepository;
+import com.epam.esm.repository.TagRepository;
+import com.epam.esm.repository.entity.Certificate;
+import com.epam.esm.repository.entity.Tag;
+import com.epam.esm.service.CertificateService;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.modelmapper.ModelMapper;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CertificateServiceImplTest {
@@ -14,124 +29,85 @@ public class CertificateServiceImplTest {
     @Mock
     private CertificateRepository certificateRepositoryMock;
     @Mock
-    private ModelMapper modelMapperMock;
-//    @Mock
-//    private TagRepository tagRepositoryMock;
-//
-//    private CertificateService certificateService;
-//    private CertificateService certificateServiceSpy;
-//    private ModelMapper modelMapper;
-//    private Certificate certificate1;
-//    private CertificateDto certificateDto1;
-//    private Certificate certificate2;
-//    private CertificateDto certificateDto2;
-//    private Certificate certificate;
-//    private CertificateDto certificateDto;
-//    private Certificate certificateWithId;
-//    private CertificateDto certificateDtoWithId;
-//    private List<Certificate> certificates;
-//    private List<CertificateDto> certificateDtos;
-//
-//    @Before
-//    public void setUpMocks() {
-//        MockitoAnnotations.initMocks(this);
-//        certificateService = new CertificateServiceImpl(certificateRepositoryMock, tagRepositoryMock, modelMapperMock);
-//        certificateServiceSpy = spy(certificateService);
-//        modelMapper = new ModelMapper();
-//
-//        Tag tag1 = new Tag();
-//        tag1.setId(1L);
-//        tag1.setName("dolls");
-//        Tag tag2 = new Tag();
-//        tag2.setId(2L);
-//        tag2.setName("books");
-//        Tag tag3 = new Tag();
-//        tag3.setId(3L);
-//        tag3.setName("magazines");
-//
-//        List<Tag> tags1 = new ArrayList<>();
-//        tags1.add(tag1);
-//        tags1.add(tag2);
-//        List<TagDto> tagDtos1 = tags1.stream()
-//                .map(tag -> modelMapper.map(tag, TagDto.class)).collect(Collectors.toList());
-//
-//        List<Tag> tags2 = new ArrayList<>();
-//        tags2.add(tag2);
-//        tags2.add(tag3);
-//        List<TagDto> tagDtos2 = tags2.stream()
-//                .map(tag -> modelMapper.map(tag, TagDto.class)).collect(Collectors.toList());
-//
-//        certificate1 = new Certificate();
-//        certificate1.setId(1L);
-//        certificate1.setName("Toy story shop certificate");
-//        certificate1.setDescription("A certificate to buy goods in Toy story shop");
-//        certificate1.setPrice(new BigDecimal(100));
-//        certificate1.setDateOfCreation(LocalDateTime.now());
-//        certificate1.setDurationInDays((short) 10);
-//        certificate1.setTagList(tags1);
-//        certificateDto1 = modelMapper.map(certificate1, CertificateDto.class);
-//        certificateDto1.setTagDtoList(tagDtos1);
-//
-//        certificate2 = new Certificate();
-//        certificate2.setId(2L);
-//        certificate2.setName("Oz by bookshop certificate");
-//        certificate2.setDescription("A certificate to buy items in bookshop");
-//        certificate2.setPrice(new BigDecimal(50));
-//        certificate2.setDateOfCreation(LocalDateTime.now());
-//        certificate2.setDurationInDays((short) 30);
-//        certificate2.setTagList(tags2);
-//        certificateDto2 = modelMapper.map(certificate2, CertificateDto.class);
-//        certificateDto2.setTagDtoList(tagDtos2);
-//
-//        certificates = new ArrayList<>();
-//        certificates.add(certificate1);
-//        certificates.add(certificate2);
-//
-//        certificateDtos = new ArrayList<>();
-//        certificateDtos.add(certificateDto1);
-//        certificateDtos.add(certificateDto2);
-//
-//        certificate = new Certificate();
-//        certificate.setName("Grocery shop");
-//        certificate.setDescription("A certificate to buy foodstuffs in grocery shop");
-//        certificate.setPrice(new BigDecimal(50));
-//        certificate.setDateOfCreation(LocalDateTime.now());
-//        certificate.setDurationInDays((short) 10);
-//        certificateDto = modelMapper.map(certificate, CertificateDto.class);
-//
-//        certificateWithId = certificate;
-//        certificateWithId.setId(1L);
-//        certificateDtoWithId = modelMapper.map(certificateWithId, CertificateDto.class);
-//    }
-//
-//    @Test
-//    public void create_Certificate_OK() {
-//        when(modelMapperMock.map(certificateDto, Certificate.class)).thenReturn(certificate);
-//        when(certificateRepositoryMock.findByName(certificate.getName())).thenReturn(Optional.empty());
-//        when(certificateRepositoryMock.create(certificate)).thenReturn(certificateWithId);
-//        doReturn(certificateDtoWithId).when(certificateServiceSpy).convertCertificateToDto(certificateWithId);
-//        //when
-//        CertificateDto actual = certificateServiceSpy.create(certificateDto);
-//        //then
-//        verify(modelMapperMock, times(1)).map(certificateDto, Certificate.class);
-//        verify(certificateRepositoryMock, times(1)).findByName(certificate.getName());
-//        verify(certificateRepositoryMock, times(1)).create(certificate);
-//        verify(certificateServiceSpy, times(1)).convertCertificateToDto(certificateWithId);
-//        assertEquals(certificateDtoWithId, actual);
-//    }
-//
-//
-//    @Test(expected = DuplicateEntityException.class)
-//    public void create_Certificate_DuplicateException() {
-//        when(modelMapperMock.map(certificateDto, Certificate.class)).thenReturn(certificate);
-//        when(certificateRepositoryMock.findByName(certificate.getName())).thenReturn(Optional.of(certificateWithId));
-//        //when
-//        certificateService.create(certificateDto);
-//        //than
-//        verify(modelMapperMock, times(1)).map(certificateDto, Certificate.class);
-//        verify(certificateRepositoryMock, times(1)).findByName(certificate.getName());
-//        verify(certificateRepositoryMock, never()).create(certificate);
-//    }
+    private TagRepository tagRepositoryMock;
+
+    private CertificateService certificateService;
+    private CertificateService certificateServiceSpy;
+    private Certificate certificate1;
+    private Certificate certificate2;
+    private Certificate certificate;
+    private Certificate certificateWithId;
+    private List<Certificate> certificates;
+
+    @Before
+    public void setUpMocks() {
+        MockitoAnnotations.initMocks(this);
+        certificateService = new CertificateServiceImpl(certificateRepositoryMock, tagRepositoryMock);
+        certificateServiceSpy = spy(certificateService);
+
+        Tag tag1 = new Tag();
+        tag1.setId(1L);
+        tag1.setName("dolls");
+        Tag tag2 = new Tag();
+        tag2.setId(2L);
+        tag2.setName("books");
+        Tag tag3 = new Tag();
+        tag3.setId(3L);
+        tag3.setName("magazines");
+
+        List<Tag> tags1 = new ArrayList<>();
+        tags1.add(tag1);
+        tags1.add(tag2);
+
+        List<Tag> tags2 = new ArrayList<>();
+        tags2.add(tag2);
+        tags2.add(tag3);
+
+        certificate1 = new Certificate();
+        certificate1.setId(1L);
+        certificate1.setName("Toy story shop certificate");
+        certificate1.setDescription("A certificate to buy goods in Toy story shop");
+        certificate1.setPrice(new BigDecimal(100));
+        certificate1.setDateOfCreation(LocalDateTime.now());
+        certificate1.setDurationInDays((short) 10);
+        certificate1.setTagList(tags1);
+
+        certificate2 = new Certificate();
+        certificate2.setId(2L);
+        certificate2.setName("Oz by bookshop certificate");
+        certificate2.setDescription("A certificate to buy items in bookshop");
+        certificate2.setPrice(new BigDecimal(50));
+        certificate2.setDateOfCreation(LocalDateTime.now());
+        certificate2.setDurationInDays((short) 30);
+        certificate2.setTagList(tags2);
+
+        certificates = new ArrayList<>();
+        certificates.add(certificate1);
+        certificates.add(certificate2);
+
+
+        certificate = new Certificate();
+        certificate.setName("Grocery shop");
+        certificate.setDescription("A certificate to buy foodstuffs in grocery shop");
+        certificate.setPrice(new BigDecimal(50));
+        certificate.setDateOfCreation(LocalDateTime.now());
+        certificate.setDurationInDays((short) 10);
+        certificate.setTagList(tags1);
+
+        certificateWithId = certificate;
+        certificateWithId.setId(1L);
+    }
+
+    @Test
+    public void create_Certificate_OK() {
+        when(certificateRepositoryMock.create(certificate)).thenReturn(certificateWithId);
+        //when
+        Certificate actual = certificateServiceSpy.create(certificate);
+        //then
+        verify(certificateRepositoryMock, times(1)).create(certificate);
+        assertEquals(certificateWithId, actual);
+    }
+
 //
 //    @Test
 //    public void find_CertificateId_OK() {
@@ -181,35 +157,29 @@ public class CertificateServiceImplTest {
 //        verify(certificateRepositoryMock, times(1)).findAll();
 //        verify(certificateServiceSpy, never()).convertCertificateToDto(any());
 //    }
-//
-//    @Test
-//    public void update_Certificate_OK() {
-//        when(modelMapperMock.map(certificateDto, Certificate.class)).thenReturn(certificate);
-//        when(certificateRepositoryMock.findById(certificate.getId())).thenReturn(Optional.of(certificate1));
-//        when(certificateRepositoryMock.update(certificate)).thenReturn(certificateWithId);
-//        doReturn(certificateDtoWithId).when(certificateServiceSpy).convertCertificateToDto(certificateWithId);
-//        //when
-//        Optional<CertificateDto> actual = certificateServiceSpy.update(certificateDto);
-//        //then
-//        verify(modelMapperMock, times(1)).map(certificateDto, Certificate.class);
-//        verify(certificateRepositoryMock, times(1)).findById(certificate.getId());
-//        verify(certificateRepositoryMock, times(1)).update(certificate);
-//        verify(certificateServiceSpy, times(1)).convertCertificateToDto(certificateWithId);
-//        assertEquals(Optional.of(certificateDtoWithId), actual);
-//    }
-//
-//    @Test
-//    public void update_Certificate_NotFound() {
-//        when(modelMapperMock.map(certificateDto, Certificate.class)).thenReturn(certificate);
-//        when(certificateRepositoryMock.findById(certificate.getId())).thenReturn(Optional.empty());
-//        //when
-//        certificateService.update(certificateDto);
-//        //than
-//        verify(modelMapperMock, times(1)).map(certificateDto, Certificate.class);
-//        verify(certificateRepositoryMock, times(1)).findById(certificate.getId());
-//        verify(certificateRepositoryMock, never()).update(certificate);
-//    }
-//
+
+    @Test
+    public void update_Certificate_OK() {
+        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.of(certificateWithId));
+        when(certificateRepositoryMock.update(certificateWithId)).thenReturn(Optional.ofNullable(certificateWithId));
+        //when
+        Optional<Certificate> actual = certificateServiceSpy.update(certificateWithId);
+        //then
+        verify(certificateRepositoryMock, times(1)).findById(VALID_ID, Certificate.class);
+        verify(certificateRepositoryMock, times(1)).update(certificateWithId);
+        assertEquals(Optional.of(certificateWithId), actual);
+    }
+
+    @Test
+    public void update_Certificate_NotFound() {
+        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.empty());
+        //when
+        certificateService.update(certificateWithId);
+        //than
+        verify(certificateRepositoryMock, times(1)).findById(VALID_ID, Certificate.class);
+        verify(certificateRepositoryMock, never()).update(certificateWithId);
+    }
+
 //    @Test
 //    public void delete_CertificateId_OK() {
 //        when(certificateRepositoryMock.findById(VALID_ID)).thenReturn(Optional.of(certificate1));
@@ -234,23 +204,25 @@ public class CertificateServiceImplTest {
 //    @Test
 //    public void filter_CertificateParams_OK() {
 //        String tagName = "magazines";
-//        String textField = "certificate to buy goods";
-//        String order = "des";
+//        String textField = "certificate to buy";
+//        String order = "asc";
 //
-//        List<Certificate> filteredCertificates = new ArrayList<>();
-//        filteredCertificates.add(certificate2);
-//        when(certificateRepositoryMock.filterCertificates(tagName, textField, order))
-//                .thenReturn(filteredCertificates);
-//        doReturn(certificateDto2).when(certificateServiceSpy).convertCertificateToDto(certificate2);
+//        Page<Certificate> certificatePage = new Page<>();
+//        certificatePage.setContent(certificates);
 //
-//        List<CertificateDto> expected = new ArrayList<>();
-//        expected.add(certificateDto2);
+//        when(certificateRepositoryMock.filterCertificatesByTagAndDescription(tagName, textField, order, 1, 3))
+//                .thenReturn(certificatePage);
+//        when(tagRepositoryMock.findByName(tagName)).thenReturn(Optional.of(tag3));
+//
+//        Page<Certificate> expected = new Page<>();
+//        expected.setContent(certificates);
 //        //when
-//        List<CertificateDto> actual = certificateServiceSpy
-//                .filterCertificates(tagName, textField, order);
+//        Page<Certificate> actual = certificateServiceSpy
+//                .filterCertificatesByTagAndDescription(tagName, textField, order, 1, 3);
 //        //then
-//        verify(certificateRepositoryMock, times(1)).filterCertificates(tagName, textField, order);
-//        verify(certificateServiceSpy, times(1)).convertCertificateToDto(certificate2);
+//        verify(certificateRepositoryMock, times(1)).filterCertificatesByTagAndDescription(tagName, textField,
+//                order, 1, 3);
+//        verify(tagRepositoryMock, times(1)).findByName()
 //        assertEquals(expected, actual);
 //    }
 

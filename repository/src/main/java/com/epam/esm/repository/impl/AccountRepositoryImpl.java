@@ -12,6 +12,8 @@ import java.util.Optional;
 
 @Repository
 public class AccountRepositoryImpl extends ApiRepositoryImpl<Account, Long> implements AccountRepository {
+    private static final String SELECT_FROM_ACCOUNT_JPQL = "select t from Account t where t.login = ?1";
+
     @PersistenceContext
     private EntityManager em;
 
@@ -28,7 +30,7 @@ public class AccountRepositoryImpl extends ApiRepositoryImpl<Account, Long> impl
 
     @Override
     public Optional<Account> findByLogin(String login){
-        Query query = em.createQuery("select t from Account t where t.login = ?1", Account.class);
+        Query query = em.createQuery(SELECT_FROM_ACCOUNT_JPQL, Account.class);
         try {
             Account account = (Account) query.setParameter(1, login).getSingleResult();
             return Optional.of(account);

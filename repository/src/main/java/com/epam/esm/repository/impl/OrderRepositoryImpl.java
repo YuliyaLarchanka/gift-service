@@ -16,6 +16,11 @@ import java.util.stream.Collectors;
 
 @Repository
 public class OrderRepositoryImpl extends ApiRepositoryImpl<Order, Long> implements OrderRepository {
+    private static final String SELECT_ORDER_BY_ACCOUNT_ID_JPQL = "SELECT o FROM Order o WHERE o.account.id = ?1";
+    private static final String SELECT_ORDER_BY_ORDER_ID_JPQL = "SELECT o FROM Order o WHERE o.account.id = ?1 and o.id = ?2";
+    private static final String SELECT_ORDER_BY_PRICE_JPQL = "SELECT o FROM Order o WHERE o.price = (SELECT MAX(x.price) " +
+            "FROM Order x WHERE x.account.id = ?1)";
+
     @PersistenceContext
     private EntityManager em;
 
@@ -37,7 +42,7 @@ public class OrderRepositoryImpl extends ApiRepositoryImpl<Order, Long> implemen
 
     @Override
     public Page<Order> findOrdersByAccountId(Long id, int page, int size) {
-        String sql = "SELECT o FROM Order o WHERE o.account.id = ?1";
+        String sql = SELECT_ORDER_BY_ACCOUNT_ID_JPQL;
 
         Query query = em.createQuery(sql, Order.class);
         List<Order> totalList = (List<Order>) query.setParameter(1, id).getResultList().stream().collect(Collectors.toList());
@@ -55,7 +60,7 @@ public class OrderRepositoryImpl extends ApiRepositoryImpl<Order, Long> implemen
             return Optional.empty();
         }
 
-        String sql = "SELECT o FROM Order o WHERE o.account.id = ?1 and o.id = ?2";
+        String sql = SELECT_ORDER_BY_ORDER_ID_JPQL;
         Query query = em.createQuery(sql, Order.class);
         Order order =  (Order) query.setParameter(1, accountId).setParameter(2, orderId).getSingleResult();
         return Optional.of(order);
@@ -63,9 +68,7 @@ public class OrderRepositoryImpl extends ApiRepositoryImpl<Order, Long> implemen
 
     @Override
     public Page<Order> findHighestPriceOrder(Long id){
-        String sql = "SELECT o FROM Order o WHERE o.price = (SELECT MAX(x.price) " +
-                "FROM Order x WHERE x.account.id = ?1)";
-        Query query = em.createQuery(sql, Order.class);
+        Query query = em.createQuery(SELECT_ORDER_BY_PRICE_JPQL, Order.class);
         Page<Order> page = new Page<>();
         try {
             Order order =  (Order) query.setParameter(1, id).setMaxResults(1).getSingleResult();

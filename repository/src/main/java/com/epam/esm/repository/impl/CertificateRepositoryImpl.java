@@ -18,6 +18,9 @@ import java.util.Optional;
 
 @Repository
 public class CertificateRepositoryImpl extends ApiRepositoryImpl<Certificate, Long> implements CertificateRepository{
+    private static final String SELECT_BY_TAG_AND_PRICE_JPQL = "select c from Certificate" +
+            " c JOIN c.tagList t ON t.name  = ?1 order by c.price ";
+
     private final TagRepository tagRepository;
 
     @PersistenceContext
@@ -46,7 +49,7 @@ public class CertificateRepositoryImpl extends ApiRepositoryImpl<Certificate, Lo
     }
 
     public Page<Certificate> filterCertificatesByTagAndPrice(String tagName, String price){
-        String jpql = "select c from Certificate c JOIN c.tagList t ON t.name  = ?1 order by c.price " + price;
+        String jpql = SELECT_BY_TAG_AND_PRICE_JPQL + price;
         Query query = em.createQuery(jpql, Certificate.class);
         Page<Certificate> page = new Page<>();
         try {

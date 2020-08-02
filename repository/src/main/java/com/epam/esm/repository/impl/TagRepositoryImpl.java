@@ -12,6 +12,8 @@ import java.util.Optional;
 
 @Repository
 public class TagRepositoryImpl extends ApiRepositoryImpl<Tag, Long> implements TagRepository {
+    private static final String SELECT_FROM_TAG_JPQL = "select t from Tag t where t.name = ?1";
+
     @PersistenceContext
     private EntityManager em;
 
@@ -22,7 +24,7 @@ public class TagRepositoryImpl extends ApiRepositoryImpl<Tag, Long> implements T
 
     @Override
     public Optional<Tag> findByName(String name) {
-        Query query = em.createQuery("select t from Tag t where t.name = ?1", Tag.class);
+        Query query = em.createQuery(SELECT_FROM_TAG_JPQL, Tag.class);
         try {
             Tag tag = (Tag) query.setParameter(1, name).getSingleResult();
             return Optional.of(tag);
