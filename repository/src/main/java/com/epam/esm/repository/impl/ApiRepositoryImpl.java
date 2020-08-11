@@ -37,6 +37,17 @@ public abstract class ApiRepositoryImpl<T, ID> implements ApiRepository<T, ID> {
         return filledPage;
     }
 
+    @Override
+    public Page<T> filteredFindAll(int pageNumber, int size) {
+        String className = getClassName();
+        int totalCount = ((Long)em.createQuery("select count(c) from " + className + " c where c.isDeleted = false").getSingleResult()).intValue();
+        Page<T> filledPage = fillPage(pageNumber,  size, totalCount);
+        Query query = em.createQuery("select c from " + className + " c where c.isDeleted = false");
+        List<T> list = query.setFirstResult(filledPage.getOffset()).setMaxResults(size).getResultList();
+        filledPage.setContent(list);
+        return filledPage;
+    }
+
     protected Page<T> fillPage(int pageNumber, int size, int totalCount){
         int offset = (pageNumber - 1) * size;
         boolean hasNext = totalCount > offset + size;

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.Optional;
 
 @RestController
 @Validated
@@ -41,20 +42,29 @@ public class TagController extends ApiController<Tag, TagDto>{
     @GetMapping
     public PageDto<TagDto> findTags(@RequestParam(defaultValue = "1") @Min(value = 1, message = "page number should be greater than zero") int page,
                                     @RequestParam(defaultValue = "3") @Min(value = 1, message = "size should be greater than zero")  int size) {
-        Page<Tag> tagPage = tagService.findAll(page, size);
+        Page<Tag> tagPage = tagService.filteredFindAll(page, size);
         Page<Tag> filledPage = fillPageLinks(tagPage, page, size, PAGE_PATH);
         return convertPageToPageDto(filledPage, tagMapper::tagToTagDto, PATH);
     }
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public TagDto findTagById(@PathVariable @Min(value = 1, message = "Id should be greater than zero") Long id) {
-        return tagService.findById(id, Tag.class).map(tagMapper::tagToTagDto)
-                .orElseThrow(() -> new EntityNotFoundException("Tag with such id is not found"));
+        Optional<Tag> tagOptional = tagService.findById(id, Tag.class);
+        if (tagOptional.isEmpty() || tagOptional.get().isDeleted()){
+            throw new EntityNotFoundException("Tag with such id is not found");
+        }
+        return tagMapper.tagToTagDto(tagOptional.get());
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteTag(@PathVariable @Valid @Min(value = 1, message = "Id should be greater than zero") Long id) {
-        tagService.delete(id, Tag.class);
+        Optional<Tag> tagOptional = tagService.findById(id, Tag.class);
+        if(tagOptional.isEmpty() || tagOptional.get().isDeleted()){
+            throw new EntityNotFoundException("Tag with such id is not found");
+        }
+        Tag tag = tagOptional.get();
+        tag.setDeleted(true);
+        tagService.update(tag);
     }
 }

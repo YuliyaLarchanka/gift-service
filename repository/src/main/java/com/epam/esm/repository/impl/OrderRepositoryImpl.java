@@ -37,7 +37,8 @@ public class OrderRepositoryImpl extends ApiRepositoryImpl<Order, Long> implemen
 
     @Override
     public Optional<Order> update(Order order) {
-        return Optional.of(new Order());
+        throw new UnsupportedOperationException();
+
     }
 
     @Override

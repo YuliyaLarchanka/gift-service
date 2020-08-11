@@ -6,6 +6,7 @@ import com.epam.esm.web.dto.ErrorDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -35,30 +36,58 @@ public class JwtFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        logger.info("do filter...");
         String token = getTokenFromRequest((HttpServletRequest) servletRequest);
-        boolean tokenRequirements = checkTokenRequired(servletRequest);
+        boolean tokenRequired = checkTokenRequired(servletRequest);
 
         if (token != null && jwtProvider.validateToken(token)) {
             String userLogin = jwtProvider.getLoginFromToken(token);
-            AuthorisedAccount authorisedAccount = detailsService.loadUserByUsername(userLogin);
+            AuthorisedAccount authorisedAccount;
+            try {
+                authorisedAccount = detailsService.loadUserByUsername(userLogin);
+            } catch (UsernameNotFoundException e) {
+                writeResponseError401(servletResponse, "No such user");
+                return;
+            }
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(authorisedAccount, null, authorisedAccount.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(auth);
-        } else if(tokenRequirements){
-            HttpServletResponse response = (HttpServletResponse)servletResponse;
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            ErrorDto errorDto = new ErrorDto(401, "Unauthorized");
-            objectMapper.writeValue(response.getWriter(), errorDto);
+        } else if (tokenRequired) {
+            writeResponseError401(servletResponse, "Invalid or empty token");
             return;
         }
+
         filterChain.doFilter(servletRequest, servletResponse);
     }
 
     private boolean checkTokenRequired(ServletRequest servletRequest){
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         String path = (request).getRequestURI().substring((request).getContextPath().length());
-        System.out.println(request.getMethod());
-        return !path.equals("/auth") && (!path.equals("/accounts") || !request.getMethod().equals("POST"));
+        String method = request.getMethod();
+
+        if (path.equals("/auth")) {
+            return false;
+        }
+
+        if (path.startsWith("/tags") && method.equals("GET")) {
+            return false;
+        }
+
+        if (path.equals("/accounts") && method.equals("POST")) {
+            return false;
+        }
+
+        if (path.startsWith("/certificates") && method.equals("GET")) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void writeResponseError401(ServletResponse servletResponse, String message) throws IOException {
+        HttpServletResponse response = (HttpServletResponse)servletResponse;
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        ErrorDto errorDto = new ErrorDto(401, message);
+        objectMapper.writeValue(response.getWriter(), errorDto);
     }
 
     private String getTokenFromRequest(HttpServletRequest request) {

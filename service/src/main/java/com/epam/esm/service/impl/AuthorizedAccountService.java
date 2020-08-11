@@ -1,11 +1,10 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.service.AccountService;
-import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.security.AuthorisedAccount;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -25,7 +24,7 @@ public class AuthorizedAccountService implements UserDetailsService {
                 .map(AuthorisedAccount::fromUserEntityToCustomUserDetails);
 
         if (authorisedAccountOptional.isEmpty()){
-            throw new EntityNotFoundException("Account doesn't found");
+            throw new UsernameNotFoundException(username);
         }
 
         return authorisedAccountOptional.get();

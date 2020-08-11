@@ -7,7 +7,6 @@ import com.epam.esm.repository.entity.Page;
 import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.exception.EmptyUpdateParameterException;
-import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.WrongFilterOrderException;
 import com.epam.esm.service.exception.WrongPriceValueParameter;
 import org.springframework.stereotype.Service;
@@ -17,6 +16,10 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +37,7 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
         List<Tag> tagList = certificate.getTagList();
         if (!tagList.isEmpty()) {
             tagList = tagList.stream()
+                    .filter(distinctByKey(Tag::getName))
                     .map(this::createTagIfNotExist)
                     .collect(Collectors.toList());
         }
@@ -41,14 +45,24 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
         return repository.create(certificate);
     }
 
+    private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
+    }
+
     private Tag createTagIfNotExist(Tag tag){
         Tag tagToCreate = new Tag();
         String name = tag.getName();
         tagToCreate.setName(name);
+        tagToCreate.setDeleted(false);
 
         Optional<Tag> tagOptional = tagRepository.findByName(name);
         if (tagOptional.isEmpty()){
             return tagRepository.create(tagToCreate);
+        }else if (tagOptional.isPresent() && tagOptional.get().isDeleted()){
+            Tag tag1 = tagOptional.get();
+            tag1.setDeleted(false);
+            return tag1;
         }
 
         return tagOptional.get();
@@ -58,7 +72,7 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
     @Transactional
     public Optional<Certificate> update(Certificate certificate) {
         Optional<Certificate> existedCertificateOptional = repository.findById(certificate.getId(), Certificate.class);
-        if (existedCertificateOptional.isEmpty()) {
+        if (existedCertificateOptional.isEmpty() || existedCertificateOptional.get().isDeleted()) {
             return Optional.empty();
         }
         Certificate existedCertificate = existedCertificateOptional.get();
@@ -76,7 +90,7 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
     @Override
     public Optional<Certificate> updateOneField(Certificate certificate) {
         Optional<Certificate> certificateToUpdateOptional = repository.findById(certificate.getId(), Certificate.class);
-        if (certificateToUpdateOptional.isEmpty()) {
+        if (certificateToUpdateOptional.isEmpty() || certificateToUpdateOptional.get().isDeleted()) {
             return Optional.empty();
         }
         Certificate certificateToUpdate = certificateToUpdateOptional.get();
@@ -101,34 +115,21 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
     }
 
     @Override
-    public Page<Certificate> filterCertificatesByTagAndPrice(String tagName, String price){
+    public Page<Certificate> filterCertificatesByTagAndPrice(List<String> tagNames, String price){
         if (!StringUtils.isEmpty(price) && !"max".equalsIgnoreCase(price) && !"min".equalsIgnoreCase(price)) {
             throw new WrongPriceValueParameter("Wrong price parameter value '" + price + "' ");
         }
-
-        Optional<Tag> tagOptional = tagRepository.findByName(tagName);
-        if(tagOptional.isEmpty()){
-            throw new EntityNotFoundException("Tag with such name is not found");
-        }
-
         price = price.equalsIgnoreCase("min")? "asc" : "desc";
-        return repository.filterCertificatesByTagAndPrice(tagName, price);
+        return repository.filterCertificatesByTagAndPrice(tagNames, price);
     }
 
 
     @Override
-    public Page<Certificate> filterCertificatesByTagAndDescription(String tagName, String descriptionPart, String order, int page, int size) {
+    public Page<Certificate> filterCertificatesByTagAndDescription(List<String> tagNames, String descriptionPart, String order, int page, int size) {
         if (!StringUtils.isEmpty(order) && !"desc".equalsIgnoreCase(order) && !"asc".equalsIgnoreCase(order)) {
             throw new WrongFilterOrderException("Wrong filter order '" + order + "' ");
         }
-
-        if (tagName!=null){
-            Optional<Tag> tagOptional = tagRepository.findByName(tagName);
-            if(tagOptional.isEmpty()){
-                throw new EntityNotFoundException("Tag with such name is not found");
-            }
-        }
-        return repository.filterCertificatesByTagAndDescription(tagName, descriptionPart, order, page, size);
+        return repository.filterCertificatesByTagAndDescription(tagNames, descriptionPart, order, page, size);
     }
 
 }

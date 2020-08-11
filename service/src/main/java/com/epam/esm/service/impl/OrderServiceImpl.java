@@ -15,6 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,8 +36,6 @@ public class OrderServiceImpl extends ApiServiceImpl<Order, Long, OrderRepositor
     @Override
     @Transactional
     public Order create(Order order) {
-//        order.setDateOfCreation(LocalDateTime.now(ZoneOffset.UTC));
-
         long accountId = order.getAccount().getId();
         Optional<Account> accountOptional = accountRepository.findById(accountId, Account.class);
         if (accountOptional.isEmpty()){
@@ -42,18 +44,25 @@ public class OrderServiceImpl extends ApiServiceImpl<Order, Long, OrderRepositor
         order.setAccount(accountOptional.get());
 
         List<Certificate> certificates = order.getCertificates();
+        List<Certificate> filteredCertificates;
         List<Certificate> fetchedCertificates;
         BigDecimal price = new BigDecimal(0);
 
         if (!certificates.isEmpty()) {
-            fetchedCertificates = certificates.stream()
-                    .map(Certificate::getId)
+            filteredCertificates = certificates.stream()
+                    .filter(distinctByKey(Certificate::getId))
+                    .collect(Collectors.toList());
+
+                    fetchedCertificates = filteredCertificates
+                            .stream()
+                            .map(Certificate::getId)
                     .map(id-> certificateRepository.findById(id, Certificate.class) )
                     .filter(Optional::isPresent)
                     .map(Optional::get)
+                    .filter(certificate -> !certificate.isDeleted())
                     .collect(Collectors.toList());
 
-            if (certificates.size()>fetchedCertificates.size()){
+            if (filteredCertificates.size()>fetchedCertificates.size()){
                 throw new EntityNotFoundException("Certificate with such id is not found");
             }
 
@@ -67,14 +76,23 @@ public class OrderServiceImpl extends ApiServiceImpl<Order, Long, OrderRepositor
         return repository.create(order);
     }
 
-    @Override
-    public Optional<Order> update(Order order) {
-        return Optional.of(new Order());
+    private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor){
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
     }
 
     @Override
-    public Page<Order> findOrdersByAccountId(Long id, int page, int size) {
-        return repository.findOrdersByAccountId(id, page, size);
+    public Optional<Order> update(Order order) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Page<Order> findOrdersByAccountId(Long id, int pageNumber, int size) {
+        Page<Order> page = repository.findOrdersByAccountId(id, pageNumber, size);
+        if (page.getContent().size()==0){
+            throw new EntityNotFoundException("Account doesn't have orders");
+        }
+        return page;
     }
 
     @Override
@@ -82,6 +100,11 @@ public class OrderServiceImpl extends ApiServiceImpl<Order, Long, OrderRepositor
         Optional<Account> accountOptional = accountRepository.findById(accountId, Account.class);
         if(accountOptional.isEmpty()){
             throw new EntityNotFoundException("Account with such id is not found");
+        }
+
+         Page<Order> page = repository.findOrdersByAccountId(accountId, 1, 3);
+        if (page.getContent().size()==0){
+            throw new EntityNotFoundException("Account doesn't have orders");
         }
 
          Optional<Order> orderOptional = repository.findPriceAndTimestampOfOrder(accountId, orderId);

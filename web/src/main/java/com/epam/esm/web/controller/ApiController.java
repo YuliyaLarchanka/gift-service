@@ -34,16 +34,22 @@ public class ApiController<T, K extends ApiDto> {
         return tPage;
     }
 
-    protected Page<T> fillPageLinksForFilter(Page<T> tPage, String filterPath, Map<String, String> params){
-        String tagName = params.get("tagName");
+    protected Page<T> fillPageLinksForFilter(Page<T> tPage, String filterPath, Map<String, String> params, List<String> tagNames){
         String descriptionPart = params.get("descriptionPart");
         String order = params.get("order");
         String price = params.get("price");
 
         StringBuilder path = new StringBuilder(filterPath);
+        int tagNamesSize = tagNames.size()-1;
 
-        if (tagName!=null){
-            path.append("tagName=").append(tagName);
+        if (tagNames.size()!=0){
+            path.append("tagNames=");
+            for (String name:tagNames) {
+                path.append(name);
+                if (tagNames.indexOf(name)!=tagNamesSize){
+                    path.append(",");
+                }
+            }
         }
         if (descriptionPart!=null){
             path.append("&descriptionPart=").append(descriptionPart);
@@ -88,7 +94,4 @@ public class ApiController<T, K extends ApiDto> {
         pageDto.setContent(list);
         return pageDto;
     }
-
-
-    //посчитать максимальное кол-во тегов и отправить юзера на последнюю страницу
 }

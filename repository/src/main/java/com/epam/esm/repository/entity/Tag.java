@@ -15,6 +15,9 @@ public class Tag {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
     @ManyToMany(mappedBy = "tagList")
     private List<Certificate> certificates = new ArrayList<>();
 
@@ -43,6 +46,14 @@ public class Tag {
     }
 
 
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -50,14 +61,18 @@ public class Tag {
 
         Tag tag = (Tag) o;
 
+        if (isDeleted != tag.isDeleted) return false;
         if (id != null ? !id.equals(tag.id) : tag.id != null) return false;
-        return name != null ? name.equals(tag.name) : tag.name == null;
+        if (name != null ? !name.equals(tag.name) : tag.name != null) return false;
+        return certificates != null ? certificates.equals(tag.certificates) : tag.certificates == null;
     }
 
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (isDeleted ? 1 : 0);
+        result = 31 * result + (certificates != null ? certificates.hashCode() : 0);
         return result;
     }
 }

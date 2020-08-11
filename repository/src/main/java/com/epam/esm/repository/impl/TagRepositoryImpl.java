@@ -41,6 +41,6 @@ public class TagRepositoryImpl extends ApiRepositoryImpl<Tag, Long> implements T
 
     @Override
     public Optional<Tag> update(Tag tag) {
-        throw new UnsupportedOperationException();
+        return Optional.of(em.merge(tag));
     }
 }

@@ -26,6 +26,11 @@ public abstract class ApiServiceImpl<T, ID, H extends ApiRepository<T, ID>> impl
     }
 
     @Override
+    public Page<T> filteredFindAll(int pageNumber, int size){
+        return repository.filteredFindAll(pageNumber, size);
+    }
+
+    @Override
     @Transactional
     public void delete(ID id, Class<T> clazz) {
         Optional<T> optional = repository.findById(id, clazz);

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.security.Principal;
 import java.util.Optional;
 
 @RestController
@@ -26,7 +27,11 @@ public class OrderController extends ApiController<Order, OrderDto>{
     private final AccountService accountService;
     private final OrderMapper orderMapper;
     private static final String PAGE_PATH = "http://localhost:8080/orders?page=";
+    private static final String PAGE_PATH_MY_ORDERS = "http://localhost:8080/accounts/myOrders?page=";
     private static final String PATH = "http://localhost:8080/orders/";
+    private static final String PATH_MY_ORDERS = "http://localhost:8080/accounts/myOrders";
+
+
 
     public OrderController(OrderService orderService, AccountService accountService, OrderMapper orderMapper, PageMapper<Order, OrderDto> pageMapper) {
         super(pageMapper);
@@ -48,9 +53,26 @@ public class OrderController extends ApiController<Order, OrderDto>{
                 .orElseThrow(() -> new EntityNotFoundException("Order with such id is not found"));
     }
 
+    @GetMapping("accounts/my-orders")
+    public PageDto<OrderDto> findAccountOrders(@RequestParam(defaultValue = "1") @Min(value = 1, message = "page should be greater than zero") int page,
+                                                @RequestParam(defaultValue = "3") @Min(value = 3, message = "size should be greater than zero") int size,
+                                                Principal principal) {
+        String login = principal.getName();
+        System.out.println(login);
+
+        Optional<Account> accountOptional = accountService.findByLogin(login);
+        if (accountOptional.isEmpty()){
+            throw new EntityNotFoundException("Account with such login is not found");
+        }
+
+        Page<Order> orderPage = orderService.findOrdersByAccountId(accountOptional.get().getId(), page, size);
+        Page<Order> filledPage = fillPageLinks(orderPage, page, size, PAGE_PATH_MY_ORDERS);
+        return convertPageToPageDto(filledPage, orderMapper::orderToOrderDto, PATH_MY_ORDERS);
+    }
+
     @GetMapping("/orders")
     public PageDto<OrderDto> findOrders(@RequestParam(defaultValue = "1") @Min(value = 1, message = "page number should be greater than zero") int page,
-                                        @RequestParam(defaultValue = "3") @Min(value = 1, message = "size should be greater than zero") int size) {
+                                        @RequestParam(defaultValue = "3") @Min(value = 3, message = "size should be greater than zero") int size) {
         Page<Order> orderPage = orderService.findAll(page, size);
         Page<Order> filledPage = fillPageLinks(orderPage, page, size, PAGE_PATH);
         return convertPageToPageDto(filledPage, orderMapper::orderToOrderDto, PATH);

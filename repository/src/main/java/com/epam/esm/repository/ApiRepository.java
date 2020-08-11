@@ -9,6 +9,8 @@ public interface ApiRepository<T, ID>{
 
     Page<T> findAll(int page, int size);
 
+    Page<T> filteredFindAll(int pageNumber, int size);
+
     Optional<T> findById(ID id, Class<T> clazz);
 
     Optional<T> update(T var);

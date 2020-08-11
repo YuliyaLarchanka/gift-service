@@ -36,6 +36,9 @@ public class Certificate {
     @Column(name = "duration_in_days")
     private short durationInDays;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
     @ManyToMany
     @JoinTable(
             name = "certificate_m2m_tag",
@@ -123,6 +126,15 @@ public class Certificate {
         setDateOfModification(LocalDateTime.now(ZoneOffset.UTC));
     }
 
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -131,6 +143,7 @@ public class Certificate {
         Certificate that = (Certificate) o;
 
         if (durationInDays != that.durationInDays) return false;
+        if (isDeleted != that.isDeleted) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
@@ -151,6 +164,7 @@ public class Certificate {
         result = 31 * result + (dateOfCreation != null ? dateOfCreation.hashCode() : 0);
         result = 31 * result + (dateOfModification != null ? dateOfModification.hashCode() : 0);
         result = 31 * result + (int) durationInDays;
+        result = 31 * result + (isDeleted ? 1 : 0);
         result = 31 * result + (tagList != null ? tagList.hashCode() : 0);
         return result;
     }

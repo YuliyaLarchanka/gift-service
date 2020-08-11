@@ -9,6 +9,8 @@ public interface ApiService<T, ID> {
 
     Page<T> findAll(int page, int size);
 
+    Page<T> filteredFindAll(int pageNumber, int size);
+
     Optional<T> findById(ID var, Class<T> clazz);
 
     Optional<T> update(T var);

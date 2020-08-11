@@ -19,14 +19,19 @@ public class TagServiceImpl extends ApiServiceImpl<Tag, Long, TagRepository> imp
     @Transactional
     public Tag create(Tag tag) {
         Optional<Tag> tagOptional = repository.findByName(tag.getName());
-        if (tagOptional.isPresent()) {
+        if (tagOptional.isPresent() && !tagOptional.get().isDeleted()) {
             throw new DuplicateEntityException("Tag with the same name already exists");
+        }else if(tagOptional.isPresent() && tagOptional.get().isDeleted()){
+            Tag tag1 = tagOptional.get();
+            tag1.setDeleted(false);
+            return tag1;
         }
         return repository.create(tag);
     }
 
+    @Transactional
     @Override
-    public Optional<Tag> update(Tag var) {
-        throw new UnsupportedOperationException();
+    public Optional<Tag> update(Tag tag) {
+        return repository.update(tag);
     }
 }

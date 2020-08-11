@@ -30,19 +30,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.POST,"/orders").hasAnyRole("CLIENT", "ADMIN")
-                .antMatchers(HttpMethod.GET, "/certificates", "/certificates/*").hasAnyRole("CLIENT", "ADMIN")
-                .antMatchers(HttpMethod.GET, "/tags", "/tags/**").hasAnyRole("CLIENT", "ADMIN")
-                .antMatchers(HttpMethod.GET, "/accounts/*/orders").hasAnyRole("ADMIN")
 
                 .antMatchers(HttpMethod.POST,"/accounts").permitAll()
-                .antMatchers("/tags", "/tags/*").hasRole("ADMIN")
-                .antMatchers("/certificates", "/certificates/*").hasRole("ADMIN")
-                .antMatchers("/accounts", "/accounts/*").hasRole("ADMIN")
-                .antMatchers("/orders", "/orders/*").hasRole("ADMIN")
-
                 .antMatchers("/auth").permitAll()
                 .antMatchers(HttpMethod.GET, "/certificates", "/certificates/*").permitAll()
+                .antMatchers(HttpMethod.GET, "/tags", "/tags/*").permitAll()
+
+                .antMatchers(HttpMethod.POST,"/orders").hasAnyRole("CLIENT", "ADMIN")
+                .antMatchers(HttpMethod.GET,"/accounts/my-orders").hasAnyRole("CLIENT", "ADMIN")
+
+                .antMatchers("/accounts/**").hasRole("ADMIN")
+                .antMatchers("/tags/**").hasRole("ADMIN")
+                .antMatchers("/certificates/**").hasRole("ADMIN")
+                .antMatchers("/orders/**").hasRole("ADMIN")
+
                 .and()
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
