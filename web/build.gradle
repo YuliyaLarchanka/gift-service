@@ -17,5 +17,5 @@ jar {
 }
 
 war {
-    archiveName = 'certificate_service.war'
+    archiveFileName = 'certificate_service.war'
 }
