@@ -1,5 +1,6 @@
 plugins {
     id 'war'
+    id "org.springframework.boot" version "2.3.1.RELEASE"
 }
 
 dependencies {
@@ -14,4 +15,8 @@ jar {
     manifest {
         attributes 'Multi-Release': 'true'
     }
+}
+
+bootWar {
+    mainClassName = 'com.epam.esm.web.Application'
 }
