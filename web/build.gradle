@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation project(':service')
     implementation project(':repository')
+    compile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: '9.0.37'
     implementation('org.springframework.boot:spring-boot-starter-web')
     annotationProcessor "org.mapstruct:mapstruct-processor:1.4.0.Beta1"
     implementation("org.mapstruct:mapstruct:1.4.0.Beta1")
