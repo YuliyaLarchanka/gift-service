@@ -15,3 +15,7 @@ jar {
         attributes 'Multi-Release': 'true'
     }
 }
+
+war {
+    archiveName = 'certificate_service.war'
+}
