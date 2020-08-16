@@ -147,16 +147,15 @@ public class CertificateServiceImplTest {
 //        assertEquals(certificateDtos, actual);
 //    }
 //
-//    @Test
-//    public void findAll_NoCriteria_NotFound() {
-//        List<Certificate> emptyList = new ArrayList<>();
-//        when(certificateRepositoryMock.findAll()).thenReturn(emptyList);
-//        //when
-//        certificateService.findAll();
-//        //then
-//        verify(certificateRepositoryMock, times(1)).findAll();
-//        verify(certificateServiceSpy, never()).convertCertificateToDto(any());
-//    }
+    @Test
+    public void findAll_NoCriteria_NotFound() {
+        List<Certificate> emptyList = new ArrayList<>();
+        when(certificateRepositoryMock.findAll(1,2)).thenReturn(null);
+        //when
+        certificateService.findAll(1,2);
+        //then
+        verify(certificateRepositoryMock, times(1)).findAll(1,2);
+    }
 
     @Test
     public void update_Certificate_OK() {
