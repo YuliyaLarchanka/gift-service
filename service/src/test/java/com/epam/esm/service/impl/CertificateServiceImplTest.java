@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class CertificateServiceImplTest {
     private final static long VALID_ID = 1L;
-    private final static long INVALID_ID = 100L;
+//    private final static long INVALID_ID = 100L;
 
     @Mock
     private CertificateRepository certificateRepositoryMock;

@@ -6,17 +6,9 @@ plugins {
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'io.spring.dependency-management'
-    apply plugin: 'jacoco'
 
     group = 'com.epam.esm'
     version '1.0-SNAPSHOT'
-
-    test {
-        finalizedBy jacocoTestReport // report is always generated after tests run
-    }
-    jacocoTestReport {
-        dependsOn test // tests are required to run before generating the report
-    }
 
     repositories {
         jcenter()
@@ -30,6 +22,15 @@ subprojects {
 }
 
 allprojects {
+    apply plugin: 'jacoco'
+
+    test {
+        finalizedBy jacocoTestReport // report is always generated after tests run
+    }
+    jacocoTestReport {
+        dependsOn test // tests are required to run before generating the report
+    }
+
     repositories {
         jcenter()
     }
