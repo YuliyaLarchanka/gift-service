@@ -3,11 +3,6 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'jacoco'
 }
-def allTestCoverageFile = "$buildDir/jacoco/allTestCoverage.exec"
-task jacocoMergeTest(type: JacocoMerge) {
-    destinationFile = file(allTestCoverageFile)
-    executionData = project.fileTree(dir: '.', include:'**/build/jacoco/test.exec')
-}
 
 subprojects {
     apply plugin: 'java-library'
