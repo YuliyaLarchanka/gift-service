@@ -35,8 +35,9 @@ public class AccountServiceImpl extends ApiServiceImpl<Account, Long, AccountRep
     }
 
     @Override
-    public Optional<Account> update(Account order) {
-        return Optional.of(new Account());
+    public Optional<Account> update(Account account) {
+        return repository.update(account);
+
     }
 
     public Optional<Account> findByLoginAndPassword(String login, String password) {

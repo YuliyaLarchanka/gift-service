@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -39,10 +38,8 @@ public class CertificateServiceImplTest {
     private CertificateService certificateService;
     private CertificateService certificateServiceSpy;
     private Certificate certificate1;
-    private Certificate certificate2;
     private Certificate certificate;
     private Certificate certificateWithId;
-    private List<Certificate> certificates;
     private Certificate certificateWithInvalidId;
     private Page<Certificate> certificatePage;
 
@@ -79,7 +76,7 @@ public class CertificateServiceImplTest {
         certificate1.setDurationInDays((short) 10);
         certificate1.setTagList(tags1);
 
-        certificate2 = new Certificate();
+        Certificate certificate2 = new Certificate();
         certificate2.setId(2L);
         certificate2.setName("Oz by");
         certificate2.setDescription("A certificate to buy items in bookshop");
@@ -88,7 +85,7 @@ public class CertificateServiceImplTest {
         certificate2.setDurationInDays((short) 30);
         certificate2.setTagList(tags2);
 
-        certificates = new ArrayList<>();
+        List<Certificate> certificates = new ArrayList<>();
         certificates.add(certificate1);
         certificates.add(certificate2);
 
@@ -101,7 +98,7 @@ public class CertificateServiceImplTest {
         certificate.setTagList(tags1);
 
         certificateWithId = certificate;
-        certificateWithId.setId(1L);
+        certificateWithId.setId(VALID_ID);
         certificateWithInvalidId = certificateWithId;
         certificateWithInvalidId.setId(INVALID_ID);
 
@@ -119,15 +116,15 @@ public class CertificateServiceImplTest {
         assertEquals(certificateWithId, actual);
     }
 
-//    @Test
-//    public void find_ById_OK() {
-//        when(certificateRepositoryMock.findById(VALID_ID,Certificate.class)).thenReturn(Optional.of(certificate));
-//        //when
-//        Optional<Certificate> actual = certificateService.findById(VALID_ID,Certificate.class);
-//        //then
-//        verify(certificateRepositoryMock, times(1)).findById(VALID_ID,Certificate.class);
-//        assertEquals(certificateWithId, actual);
-//    }
+    @Test
+    public void find_ById_OK() {
+        when(certificateRepositoryMock.findById(VALID_ID,Certificate.class)).thenReturn(Optional.of(certificateWithId));
+        //when
+        Optional<Certificate> actual = certificateService.findById(VALID_ID,Certificate.class);
+        //then
+        verify(certificateRepositoryMock, times(1)).findById(VALID_ID,Certificate.class);
+        assertEquals(Optional.of(certificateWithId), actual);
+    }
 
     @Test
     public void find_ById_NotFound() {
@@ -149,17 +146,39 @@ public class CertificateServiceImplTest {
         assertEquals(certificatePage, actual);
     }
 
-//    @Test
-//    public void findAll_PageSize_NotFound() {
-//        when(certificateRepositoryMock.findAll(page,size)).thenReturn(null);
-//        //when
-//        certificateService.findAll(1,2);
-//        //then
-//        verify(certificateRepositoryMock, times(1)).findAll(1,2);
-//    }
+    @Test
+    public void findAll_PageSize_NotFound() {
+        List<Certificate> emptyList = new ArrayList<>();
+        Page<Certificate> certificatePage = new Page<>();
+        certificatePage.setContent(emptyList);
+        int offset = 0;
+        boolean hasNext = false;
+        boolean hasPrevious = false;
+        certificatePage.setTotalCount(0);
+        certificatePage.setOffset(offset);
+        certificatePage.setHasNext(hasNext);
+        certificatePage.setHasPrevious(hasPrevious);
+
+        when(certificateRepositoryMock.findAll(page,size)).thenReturn(certificatePage);
+        //when
+        Page<Certificate> actual =  certificateService.findAll(page,size);
+        //then
+        verify(certificateRepositoryMock, times(1)).findAll(page,size);
+        assertEquals(certificatePage, actual);
+    }
 
 //    @Test
 //    public void filteredFindAll_PageSize_OK() {
+//        Page<Certificate> certificatePage = new Page<>();
+//        certificatePage.setContent(certificates);
+//        int offset = 0;
+//        boolean hasNext = false;
+//        boolean hasPrevious = false;
+//        certificatePage.setTotalCount(2);
+//        certificatePage.setOffset(offset);
+//        certificatePage.setHasNext(hasNext);
+//        certificatePage.setHasPrevious(hasPrevious);
+//
 //        when(certificateRepositoryMock.filteredFindAll(page, size)).thenReturn(certificatePage);
 //        //when
 //        Page<Certificate> actual = certificateService.filteredFindAll(page, size);
@@ -168,6 +187,7 @@ public class CertificateServiceImplTest {
 //        assertEquals(certificatePage, actual);
 //    }
 //
+
 //    @Test
 //    public void update_Certificate_OK() {
 //        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.of(certificateWithId));
