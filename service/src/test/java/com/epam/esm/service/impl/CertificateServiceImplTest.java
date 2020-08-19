@@ -3,8 +3,10 @@ package com.epam.esm.service.impl;
 import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.entity.Certificate;
+import com.epam.esm.repository.entity.Page;
 import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.CertificateService;
+import com.epam.esm.service.exception.EntityNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,10 +23,12 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class CertificateServiceImplTest {
     private final static long VALID_ID = 1L;
-//    private final static long INVALID_ID = 100L;
+    private final static long INVALID_ID = 10000000L;
+    private final int page = 1;
+    private final int size = 3;
 
     @Mock
     private CertificateRepository certificateRepositoryMock;
@@ -38,6 +42,8 @@ public class CertificateServiceImplTest {
     private Certificate certificate;
     private Certificate certificateWithId;
     private List<Certificate> certificates;
+    private Certificate certificateWithInvalidId;
+    private Page<Certificate> certificatePage;
 
     @Before
     public void setUpMocks() {
@@ -65,7 +71,7 @@ public class CertificateServiceImplTest {
 
         certificate1 = new Certificate();
         certificate1.setId(1L);
-        certificate1.setName("Toy story shop certificate");
+        certificate1.setName("Toy story");
         certificate1.setDescription("A certificate to buy goods in Toy story shop");
         certificate1.setPrice(new BigDecimal(100));
         certificate1.setDateOfCreation(LocalDateTime.now());
@@ -74,7 +80,7 @@ public class CertificateServiceImplTest {
 
         certificate2 = new Certificate();
         certificate2.setId(2L);
-        certificate2.setName("Oz by bookshop certificate");
+        certificate2.setName("Oz by");
         certificate2.setDescription("A certificate to buy items in bookshop");
         certificate2.setPrice(new BigDecimal(50));
         certificate2.setDateOfCreation(LocalDateTime.now());
@@ -84,7 +90,6 @@ public class CertificateServiceImplTest {
         certificates = new ArrayList<>();
         certificates.add(certificate1);
         certificates.add(certificate2);
-
 
         certificate = new Certificate();
         certificate.setName("Grocery shop");
@@ -96,6 +101,11 @@ public class CertificateServiceImplTest {
 
         certificateWithId = certificate;
         certificateWithId.setId(1L);
+        certificateWithInvalidId = certificateWithId;
+        certificateWithInvalidId.setId(INVALID_ID);
+
+        certificatePage = new Page<>();
+        certificatePage.setContent(certificates);
     }
 
     @Test
@@ -108,121 +118,135 @@ public class CertificateServiceImplTest {
         assertEquals(certificateWithId, actual);
     }
 
-//
 //    @Test
-//    public void find_CertificateId_OK() {
-//        when(certificateRepositoryMock.findById(VALID_ID)).thenReturn(Optional.of(certificate1));
-//        doReturn(certificateDto1).when(certificateServiceSpy).convertCertificateToDto(certificate1);
-//
-//        Optional<CertificateDto> expected = Optional.of(certificateDto1);
+//    public void find_ById_OK() {
+//        when(certificateRepositoryMock.findById(VALID_ID,Certificate.class)).thenReturn(Optional.of(certificate));
 //        //when
-//        Optional<CertificateDto> actual = certificateServiceSpy.findById(VALID_ID);
+//        Optional<Certificate> actual = certificateService.findById(VALID_ID,Certificate.class);
 //        //then
-//        verify(certificateRepositoryMock, times(1)).findById(VALID_ID);
-//        verify(certificateServiceSpy, times(1)).convertCertificateToDto(certificate1);
-//        assertEquals(expected, actual);
+//        verify(certificateRepositoryMock, times(1)).findById(VALID_ID,Certificate.class);
+//        assertEquals(certificateWithId, actual);
 //    }
-//
-//    @Test
-//    public void find_CertificateId_NotFound() {
-//        when(certificateRepositoryMock.findById(INVALID_ID)).thenReturn(Optional.empty());
-//        //when
-//        certificateServiceSpy.findById(INVALID_ID);
-//        //then
-//        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID);
-//        verify(certificateServiceSpy, never()).convertCertificateToDto(any());
-//    }
-//
-//    @Test
-//    public void findAll_NoCriteria_OK() {
-//        when(certificateRepositoryMock.findAll()).thenReturn(certificates);
-//        doReturn(certificateDto1).when(certificateServiceSpy).convertCertificateToDto(certificate1);
-//        doReturn(certificateDto2).when(certificateServiceSpy).convertCertificateToDto(certificate2);
-//        //when
-//        List<CertificateDto> actual = certificateServiceSpy.findAll();
-//        //then
-//        verify(certificateRepositoryMock, times(1)).findAll();
-//        verify(certificateServiceSpy, times(1)).convertCertificateToDto(certificate1);
-//        verify(certificateServiceSpy, times(1)).convertCertificateToDto(certificate2);
-//        assertEquals(certificateDtos, actual);
-//    }
-//
+
     @Test
-    public void findAll_NoCriteria_NotFound() {
-        List<Certificate> emptyList = new ArrayList<>();
-        when(certificateRepositoryMock.findAll(1,2)).thenReturn(null);
+    public void find_ById_NotFound() {
+        when(certificateRepositoryMock.findById(INVALID_ID,Certificate.class)).thenReturn(Optional.empty());
+        //when
+        Optional<Certificate> actual = certificateService.findById(INVALID_ID,Certificate.class);
+        //then
+        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID,Certificate.class);
+        assertEquals(Optional.empty(), actual);
+    }
+
+    @Test
+    public void findAll_PageSize_OK() {
+        when(certificateRepositoryMock.findAll(page, size)).thenReturn(certificatePage);
+        //when
+        Page<Certificate> actual = certificateService.findAll(page, size);
+        //then
+        verify(certificateRepositoryMock, times(1)).findAll(page, size);
+        assertEquals(certificatePage, actual);
+    }
+
+    @Test
+    public void findAll_PageSize_NotFound() {
+        when(certificateRepositoryMock.findAll(page,size)).thenReturn(null);
         //when
         certificateService.findAll(1,2);
         //then
         verify(certificateRepositoryMock, times(1)).findAll(1,2);
     }
 
-    @Test
-    public void update_Certificate_OK() {
-        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.of(certificateWithId));
-        when(certificateRepositoryMock.update(certificateWithId)).thenReturn(Optional.ofNullable(certificateWithId));
-        //when
-        Optional<Certificate> actual = certificateServiceSpy.update(certificateWithId);
-        //then
-        verify(certificateRepositoryMock, times(1)).findById(VALID_ID, Certificate.class);
-        verify(certificateRepositoryMock, times(1)).update(certificateWithId);
-        assertEquals(Optional.of(certificateWithId), actual);
-    }
+//    @Test
+//    public void filteredFindAll_PageSize_OK() {
+//        when(certificateRepositoryMock.filteredFindAll(page, size)).thenReturn(certificatePage);
+//        //when
+//        Page<Certificate> actual = certificateService.filteredFindAll(page, size);
+//        //then
+//        verify(certificateRepositoryMock, times(1)).findAll(page, size);
+//        assertEquals(certificatePage, actual);
+//    }
+//
+//    @Test
+//    public void update_Certificate_OK() {
+//        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.of(certificateWithId));
+//        when(certificateRepositoryMock.update(certificateWithId)).thenReturn(Optional.of(certificateWithId));
+//        //when
+//        Optional<Certificate> actual = certificateService.update(certificateWithId);
+//        //then
+//        verify(certificateRepositoryMock, times(1)).findById(VALID_ID, Certificate.class);
+//        verify(certificateRepositoryMock, times(1)).update(certificateWithId);
+//        assertEquals(Optional.of(certificateWithId), actual);
+//    }
 
     @Test
     public void update_Certificate_NotFound() {
         when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.empty());
         //when
-        certificateService.update(certificateWithId);
+        Optional<Certificate> actual = certificateService.update(certificateWithInvalidId);
         //than
-        verify(certificateRepositoryMock, times(1)).findById(VALID_ID, Certificate.class);
-        verify(certificateRepositoryMock, never()).update(certificateWithId);
+        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID, Certificate.class);
+        assertEquals(Optional.empty(), actual);
     }
 
 //    @Test
-//    public void delete_CertificateId_OK() {
-//        when(certificateRepositoryMock.findById(VALID_ID)).thenReturn(Optional.of(certificate1));
-//        doNothing().when(certificateRepositoryMock).delete(VALID_ID);
+//    public void updateOneField_Certificate_OK() {
+//        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.of(certificateWithId));
+//        when(certificateRepositoryMock.update(certificateWithId)).thenReturn(Optional.of(certificateWithId));
 //        //when
-//        certificateService.delete(VALID_ID);
+//        Optional<Certificate> actual = certificateService.updateOneField(certificateWithId);
 //        //then
-//        verify(certificateRepositoryMock, times(1)).findById(VALID_ID);
-//        verify(certificateRepositoryMock, times(1)).delete(VALID_ID);
-//    }
-//
-//    @Test(expected = EntityToDeleteNotFoundException.class)
-//    public void delete_CertificateId_NotFoundException() {
-//        when(certificateRepositoryMock.findById(INVALID_ID)).thenReturn(Optional.empty());
-//        //when
-//        certificateService.delete(INVALID_ID);
-//        //then
-//        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID);
-//        verify(certificateRepositoryMock, never()).delete(INVALID_ID);
-//    }
-//
-//    @Test
-//    public void filter_CertificateParams_OK() {
-//        String tagName = "magazines";
-//        String textField = "certificate to buy";
-//        String order = "asc";
-//
-//        Page<Certificate> certificatePage = new Page<>();
-//        certificatePage.setContent(certificates);
-//
-//        when(certificateRepositoryMock.filterCertificatesByTagAndDescription(tagName, textField, order, 1, 3))
-//                .thenReturn(certificatePage);
-//        when(tagRepositoryMock.findByName(tagName)).thenReturn(Optional.of(tag3));
-//
-//        Page<Certificate> expected = new Page<>();
-//        expected.setContent(certificates);
-//        //when
-//        Page<Certificate> actual = certificateServiceSpy
-//                .filterCertificatesByTagAndDescription(tagName, textField, order, 1, 3);
-//        //then
-//        verify(certificateRepositoryMock, times(1)).filterCertificatesByTagAndDescription(tagName, textField,
-//                order, 1, 3);
-//        verify(tagRepositoryMock, times(1)).findByName()
-//        assertEquals(expected, actual);
+//        verify(certificateRepositoryMock, times(1)).findById(VALID_ID, Certificate.class);
+//        verify(certificateRepositoryMock, times(1)).update(certificateWithId);
+//        assertEquals(Optional.of(certificateWithId), actual);
 //    }
 
+    @Test
+    public void updateOneFiled_Certificate_NotFound() {
+        when(certificateRepositoryMock.findById(INVALID_ID, Certificate.class)).thenReturn(Optional.empty());
+        //when
+        Optional<Certificate> actual = certificateService.updateOneField(certificateWithInvalidId);
+        //than
+        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID, Certificate.class);
+        assertEquals(Optional.empty(), actual);
+    }
+
+    @Test
+    public void delete_CertificateId_OK() {
+        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.of(certificate1));
+        doNothing().when(certificateRepositoryMock).delete(certificate1);
+        //when
+        certificateService.delete(VALID_ID, Certificate.class);
+        //then
+        verify(certificateRepositoryMock, times(1)).findById(VALID_ID, Certificate.class);
+        verify(certificateRepositoryMock, times(1)).delete(certificate1);
+    }
+
+    @Test(expected = EntityNotFoundException.class)
+    public void delete_CertificateId_NotFoundException() {
+        when(certificateRepositoryMock.findById(INVALID_ID, Certificate.class)).thenReturn(Optional.empty());
+        //when
+        certificateService.delete(INVALID_ID, Certificate.class);
+        //then
+        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID, Certificate.class);
+        verify(certificateRepositoryMock, never()).delete(certificate1);
+    }
+
+    @Test
+    public void filterCertificate_TagPrice_OK() {
+        List<String> tagNames = new ArrayList<>();
+        tagNames.add("Toy story");
+        tagNames.add("Oz by");
+        List<Certificate> certificates = new ArrayList<>();
+        certificates.add(certificate1);
+        Page<Certificate> certificatePage = new Page<>();
+        certificatePage.setContent(certificates);
+
+        when(certificateRepositoryMock.filterCertificatesByTagAndPrice(tagNames, "asc")).thenReturn(certificatePage);
+        //when
+        Page<Certificate> actual = certificateService.filterCertificatesByTagAndPrice(tagNames, "min");
+        //then
+        verify(certificateRepositoryMock, times(1)).filterCertificatesByTagAndPrice(tagNames, "asc");
+        assertEquals(certificatePage, actual);
+    }
 }

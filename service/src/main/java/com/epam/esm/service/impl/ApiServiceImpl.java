@@ -26,8 +26,8 @@ public abstract class ApiServiceImpl<T, ID, H extends ApiRepository<T, ID>> impl
     }
 
     @Override
-    public Page<T> filteredFindAll(int pageNumber, int size){
-        return repository.filteredFindAll(pageNumber, size);
+    public Page<T> filteredFindAll(int page, int size){
+        return repository.filteredFindAll(page, size);
     }
 
     @Override
