@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 public class AccountServiceImplTest {
     private final static long VALID_ID = 1L;
     private final static long INVALID_ID = 10000000L;
-    private String encoded;
+
 
     @Mock
     private AccountRepository accountRepositoryMock;
@@ -31,10 +31,10 @@ public class AccountServiceImplTest {
     private AccountService accountService;
     private AccountService accountServiceSpy;
     private Account account1;
-    private Account account2;
     private Account accountWithId;
-    private List<Account> accounts;
-    private Account accountWithInvalidId;
+    private String encoded;
+
+
 
     @BeforeEach
     public void setUpMocks() {
@@ -46,7 +46,7 @@ public class AccountServiceImplTest {
         account1.setLogin("Bob123");
         account1.setPassword("123456");
 
-        account2 = new Account();
+        Account account2 = new Account();
         account2.setLogin("Joe123");
         account1.setPassword("123456");
 
@@ -54,10 +54,10 @@ public class AccountServiceImplTest {
         accountWithId.setId(VALID_ID);
         accountWithId.setRole(RoleEnum.ROLE_CLIENT);
 
-        accountWithInvalidId = account1;
+        Account accountWithInvalidId = account1;
         accountWithInvalidId.setId(INVALID_ID);
 
-        accounts = new ArrayList<>();
+        List<Account> accounts = new ArrayList<>();
         accounts.add(account1);
         accounts.add(account2);
 

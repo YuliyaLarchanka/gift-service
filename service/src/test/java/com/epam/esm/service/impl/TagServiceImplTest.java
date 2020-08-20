@@ -26,10 +26,7 @@ public class TagServiceImplTest {
     private TagService tagService;
     private TagService tagServiceSpy;
     private Tag tag1;
-    private Tag tag2;
     private Tag tagWithId;
-    private List<Tag> tags;
-    private Tag tagWithInvalidId;
 
     @BeforeEach
     public void setUpMocks() {
@@ -40,16 +37,16 @@ public class TagServiceImplTest {
         tag1 = new Tag();
         tag1.setName("dolls");
 
-        tag2 = new Tag();
+        Tag tag2 = new Tag();
         tag2.setName("books");
 
         tagWithId = tag1;
         tagWithId.setId(VALID_ID);
 
-        tagWithInvalidId = tag1;
+        Tag tagWithInvalidId = tag1;
         tagWithInvalidId.setId(INVALID_ID);
 
-        tags = new ArrayList<>();
+        List<Tag> tags = new ArrayList<>();
         tags.add(tag1);
         tags.add(tag2);
     }

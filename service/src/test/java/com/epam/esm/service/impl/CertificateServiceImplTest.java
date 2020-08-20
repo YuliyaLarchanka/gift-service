@@ -98,7 +98,7 @@ public class CertificateServiceImplTest {
         certificate.setTagList(tags1);
 
         certificateWithId = certificate;
-        certificateWithId.setId(VALID_ID);
+        certificateWithId.setId(1L);
         certificateWithInvalidId = certificateWithId;
         certificateWithInvalidId.setId(INVALID_ID);
 
@@ -188,39 +188,39 @@ public class CertificateServiceImplTest {
 //    }
 //
 
-//    @Test
-//    public void update_Certificate_OK() {
-//        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.of(certificateWithId));
-//        when(certificateRepositoryMock.update(certificateWithId)).thenReturn(Optional.of(certificateWithId));
-//        //when
-//        Optional<Certificate> actual = certificateService.update(certificateWithId);
-//        //then
-//        verify(certificateRepositoryMock, times(1)).findById(VALID_ID, Certificate.class);
-//        verify(certificateRepositoryMock, times(1)).update(certificateWithId);
-//        assertEquals(Optional.of(certificateWithId), actual);
-//    }
+    @Test
+    public void update_Certificate_OK() {
+        when(certificateRepositoryMock.findById(certificateWithId.getId(), Certificate.class)).thenReturn(Optional.of(certificateWithId));
+        when(certificateRepositoryMock.update(certificateWithId)).thenReturn(Optional.of(certificateWithId));
+        //when
+        Optional<Certificate> actual = certificateService.update(certificateWithId);
+        //then
+        verify(certificateRepositoryMock, times(1)).findById(certificateWithId.getId(), Certificate.class);
+        verify(certificateRepositoryMock, times(1)).update(certificateWithId);
+        assertEquals(Optional.of(certificateWithId), actual);
+    }
 
-//    @Test
-//    public void update_Certificate_NotFound() {
-//        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.empty());
-//        //when
-//        Optional<Certificate> actual = certificateService.update(certificateWithInvalidId);
-//        //than
-//        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID, Certificate.class);
-//        assertEquals(Optional.empty(), actual);
-//    }
+    @Test
+    public void update_Certificate_NotFound() {
+        when(certificateRepositoryMock.findById(INVALID_ID, Certificate.class)).thenReturn(Optional.empty());
+        //when
+        Optional<Certificate> actual = certificateService.update(certificateWithInvalidId);
+        //than
+        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID, Certificate.class);
+        assertEquals(Optional.empty(), actual);
+    }
 
-//    @Test
-//    public void updateOneField_Certificate_OK() {
-//        when(certificateRepositoryMock.findById(VALID_ID, Certificate.class)).thenReturn(Optional.of(certificateWithId));
-//        when(certificateRepositoryMock.update(certificateWithId)).thenReturn(Optional.of(certificateWithId));
-//        //when
-//        Optional<Certificate> actual = certificateService.updateOneField(certificateWithId);
-//        //then
-//        verify(certificateRepositoryMock, times(1)).findById(VALID_ID, Certificate.class);
-//        verify(certificateRepositoryMock, times(1)).update(certificateWithId);
-//        assertEquals(Optional.of(certificateWithId), actual);
-//    }
+    @Test
+    public void updateOneField_Certificate_OK() {
+        when(certificateRepositoryMock.findById(certificateWithId.getId(), Certificate.class)).thenReturn(Optional.of(certificateWithId));
+        when(certificateRepositoryMock.update(certificateWithId)).thenReturn(Optional.of(certificateWithId));
+        //when
+        Optional<Certificate> actual = certificateService.updateOneField(certificateWithId);
+        //then
+        verify(certificateRepositoryMock, times(1)).findById(certificateWithId.getId(), Certificate.class);
+        verify(certificateRepositoryMock, times(1)).update(certificateWithId);
+        assertEquals(Optional.of(certificateWithId), actual);
+    }
 
     @Test
     public void updateOneFiled_Certificate_NotFound() {
