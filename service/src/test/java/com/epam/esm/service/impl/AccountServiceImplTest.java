@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 public class AccountServiceImplTest {
     private final static long VALID_ID = 1L;
     private final static long INVALID_ID = 10000000L;
-    private String encodedPassword;
+    private String encoded;
 
     @Mock
     private AccountRepository accountRepositoryMock;
@@ -61,13 +61,13 @@ public class AccountServiceImplTest {
         accounts.add(account1);
         accounts.add(account2);
 
-        encodedPassword = "123456";
+        encoded = "123456";
     }
 
     @Test
     public void create_Account_OK() {
         when(accountRepositoryMock.findByLogin(account1.getLogin())).thenReturn(Optional.empty());
-        when(passwordEncoderMock.encode(account1.getPassword())).thenReturn(encodedPassword);
+        when(passwordEncoderMock.encode(account1.getPassword())).thenReturn(encoded);
         when(accountRepositoryMock.create(accountWithId)).thenReturn(accountWithId);
         //when
         Account actual = accountServiceSpy.create(account1);
@@ -76,16 +76,6 @@ public class AccountServiceImplTest {
         verify(passwordEncoderMock, times(1)).encode(account1.getPassword());
         verify(accountRepositoryMock, times(1)).create(accountWithId);
         assertEquals(accountWithId, actual);
-    }
-
-    @Test
-    public void update_Account_OK() {
-        when(accountRepositoryMock.update(accountWithId)).thenReturn(Optional.of(accountWithId));
-        //when
-        Optional<Account> actual = accountService.update(accountWithId);
-        //then
-        verify(accountRepositoryMock, times(1)).update(accountWithId);
-        assertEquals(Optional.of(accountWithId), actual);
     }
 
     @Test

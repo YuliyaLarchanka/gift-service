@@ -2,6 +2,7 @@ package com.epam.esm.service.impl;
 
 import com.epam.esm.repository.AccountRepository;
 import com.epam.esm.repository.entity.Account;
+import com.epam.esm.repository.entity.Certificate;
 import com.epam.esm.repository.entity.RoleEnum;
 import com.epam.esm.service.AccountService;
 import com.epam.esm.service.exception.DuplicateEntityException;
@@ -36,7 +37,7 @@ public class AccountServiceImpl extends ApiServiceImpl<Account, Long, AccountRep
 
     @Override
     public Optional<Account> update(Account account) {
-        return repository.update(account);
+       throw new UnsupportedOperationException();
 
     }
 
