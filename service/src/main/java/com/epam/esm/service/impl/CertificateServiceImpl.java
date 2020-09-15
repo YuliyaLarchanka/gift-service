@@ -35,19 +35,16 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
     @Transactional
     public Certificate create(Certificate certificate) {
         List<Tag> tagList = certificate.getTagList();
+        tagList = tagList.stream().filter(tag -> tag.getName().length()>2)
+                .peek(tag -> tag.setName(tag.getName().toLowerCase()))
+                .collect(Collectors.toList());
         if (!tagList.isEmpty()) {
             tagList = tagList.stream()
-                    .filter(distinctByKey(Tag::getName))
                     .map(this::createTagIfNotExist)
                     .collect(Collectors.toList());
         }
         certificate.setTagList(tagList);
         return repository.create(certificate);
-    }
-
-    private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-        Set<Object> seen = ConcurrentHashMap.newKeySet();
-        return t -> seen.add(keyExtractor.apply(t));
     }
 
     private Tag createTagIfNotExist(Tag tag){
@@ -71,6 +68,11 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
     @Override
     @Transactional
     public Optional<Certificate> update(Certificate certificate) {
+        List<Tag> tags = certificate.getTagList().stream().map(tag -> {
+            tag.setName(tag.getName().toLowerCase());
+            return tag;
+        }).collect(Collectors.toList());
+        certificate.setTagList(tags);
         Optional<Certificate> existedCertificateOptional = repository.findById(certificate.getId(), Certificate.class);
         if (existedCertificateOptional.isEmpty() || existedCertificateOptional.get().isDeleted()) {
             return Optional.empty();
@@ -94,7 +96,6 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
             return Optional.empty();
         }
         Certificate certificateToUpdate = certificateToUpdateOptional.get();
-
         String name = certificate.getName();
         String description = certificate.getDescription();
         BigDecimal price = certificate.getPrice();
@@ -110,7 +111,6 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
         } else{
             throw new EmptyUpdateParameterException("Empty or invalid field value");
         }
-
         return repository.update(certificateToUpdate);
     }
 
@@ -122,7 +122,6 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
         price = price.equalsIgnoreCase("min")? "asc" : "desc";
         return repository.filterCertificatesByTagAndPrice(tagNames, price);
     }
-
 
     @Override
     public Page<Certificate> filterCertificatesByTagAndDescription(List<String> tagNames, String descriptionPart, String order, int page, int size) {

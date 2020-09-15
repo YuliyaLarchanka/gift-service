@@ -30,7 +30,7 @@ CREATE TABLE certificate_m2m_tag (
 
 
 CREATE OR REPLACE FUNCTION filter_by_text (text character varying)
-  RETURNS TABLE (certificate_id   integer   -- also visible as OUT parameter inside function
+  RETURNS TABLE (certificate_id   integer
                , name   varchar(60)
                , description varchar(300)
         , price numeric(8,2)
@@ -64,7 +64,7 @@ CREATE TABLE account_order (
 
 CREATE TABLE account_order_m2m_certificate (
     account_order_id int REFERENCES account_order (account_order_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    certificate_id int REFERENCES certificate (certificate_id) ON UPDATE CASCADE,
+    certificate_id int REFERENCES certificate (certificate_id),
     CONSTRAINT order_certificate_id PRIMARY KEY (account_order_id, certificate_id)
 );
 
