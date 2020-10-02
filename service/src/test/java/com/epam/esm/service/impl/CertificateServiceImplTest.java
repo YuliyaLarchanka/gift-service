@@ -27,8 +27,6 @@ import static org.mockito.Mockito.*;
 public class CertificateServiceImplTest {
     private final static long VALID_ID = 1L;
     private final static long INVALID_ID = 10000000L;
-    private final int page = 1;
-    private final int size = 3;
 
     @Mock
     private CertificateRepository certificateRepositoryMock;
@@ -41,7 +39,6 @@ public class CertificateServiceImplTest {
     private Certificate certificate;
     private Certificate certificateWithId;
     private Certificate certificateWithInvalidId;
-    private Page<Certificate> certificatePage;
 
     @BeforeEach
     public void setUpMocks() {
@@ -49,25 +46,35 @@ public class CertificateServiceImplTest {
         certificateService = new CertificateServiceImpl(certificateRepositoryMock, tagRepositoryMock);
         certificateServiceSpy = spy(certificateService);
 
-        Tag tag1 = new Tag();
-        tag1.setId(1L);
-        tag1.setName("dolls");
-        Tag tag2 = new Tag();
-        tag2.setId(2L);
-        tag2.setName("books");
-        Tag tag3 = new Tag();
-        tag3.setId(3L);
-        tag3.setName("magazines");
+        certificate1 = prepareCertificates().get(0);
+        certificate = prepareCertificate();
+        certificateWithId = certificate;
+        certificateWithId.setId(VALID_ID);
+        certificateWithInvalidId = certificate;
+        certificateWithInvalidId.setId(INVALID_ID);
 
-        List<Tag> tags1 = new ArrayList<>();
-        tags1.add(tag1);
-        tags1.add(tag2);
+        List<Certificate> certificates = prepareCertificates();
+        Page<Certificate> certificatePage = new Page<>();
+        certificatePage.setContent(certificates);
+    }
 
-        List<Tag> tags2 = new ArrayList<>();
-        tags2.add(tag2);
-        tags2.add(tag3);
+    private Certificate prepareCertificate(){
+        List<Tag> tags = prepareTags();
+        Certificate certificate = new Certificate();
+        certificate.setName("Grocery shop");
+        certificate.setDescription("A certificate to buy foodstuffs in grocery shop");
+        certificate.setPrice(new BigDecimal(50));
+        certificate.setDateOfCreation(LocalDateTime.now());
+        certificate.setDurationInDays((short) 10);
+        certificate.setTagList(tags);
+        return certificate;
+    }
 
-        certificate1 = new Certificate();
+    private List<Certificate> prepareCertificates(){
+        List<Tag> tags1 = prepareTags();
+        List<Tag> tags2 = prepareTags();
+
+        Certificate certificate1 = new Certificate();
         certificate1.setId(1L);
         certificate1.setName("Toy story");
         certificate1.setDescription("A certificate to buy goods in Toy story shop");
@@ -88,22 +95,24 @@ public class CertificateServiceImplTest {
         List<Certificate> certificates = new ArrayList<>();
         certificates.add(certificate1);
         certificates.add(certificate2);
+        return certificates;
+    }
 
-        certificate = new Certificate();
-        certificate.setName("Grocery shop");
-        certificate.setDescription("A certificate to buy foodstuffs in grocery shop");
-        certificate.setPrice(new BigDecimal(50));
-        certificate.setDateOfCreation(LocalDateTime.now());
-        certificate.setDurationInDays((short) 10);
-        certificate.setTagList(tags1);
+    private List<Tag> prepareTags(){
+        Tag tag1 = new Tag();
+        tag1.setId(1L);
+        tag1.setName("dolls");
+        Tag tag2 = new Tag();
+        tag2.setId(2L);
+        tag2.setName("books");
+        Tag tag3 = new Tag();
+        tag3.setId(3L);
+        tag3.setName("magazines");
 
-        certificateWithId = certificate;
-        certificateWithId.setId(1L);
-        certificateWithInvalidId = certificateWithId;
-        certificateWithInvalidId.setId(INVALID_ID);
-
-        certificatePage = new Page<>();
-        certificatePage.setContent(certificates);
+        List<Tag> tags = new ArrayList<>();
+        tags.add(tag2);
+        tags.add(tag3);
+        return tags;
     }
 
     @Test
@@ -115,78 +124,6 @@ public class CertificateServiceImplTest {
         verify(certificateRepositoryMock, times(1)).create(certificate);
         assertEquals(certificateWithId, actual);
     }
-
-    @Test
-    public void find_ById_OK() {
-        when(certificateRepositoryMock.findById(VALID_ID,Certificate.class)).thenReturn(Optional.of(certificateWithId));
-        //when
-        Optional<Certificate> actual = certificateService.findById(VALID_ID,Certificate.class);
-        //then
-        verify(certificateRepositoryMock, times(1)).findById(VALID_ID,Certificate.class);
-        assertEquals(Optional.of(certificateWithId), actual);
-    }
-
-    @Test
-    public void find_ById_NotFound() {
-        when(certificateRepositoryMock.findById(INVALID_ID,Certificate.class)).thenReturn(Optional.empty());
-        //when
-        Optional<Certificate> actual = certificateService.findById(INVALID_ID,Certificate.class);
-        //then
-        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID,Certificate.class);
-        assertEquals(Optional.empty(), actual);
-    }
-
-    @Test
-    public void findAll_PageSize_OK() {
-        when(certificateRepositoryMock.findAll(page, size)).thenReturn(certificatePage);
-        //when
-        Page<Certificate> actual = certificateService.findAll(page, size);
-        //then
-        verify(certificateRepositoryMock, times(1)).findAll(page, size);
-        assertEquals(certificatePage, actual);
-    }
-
-    @Test
-    public void findAll_PageSize_NotFound() {
-        List<Certificate> emptyList = new ArrayList<>();
-        Page<Certificate> certificatePage = new Page<>();
-        certificatePage.setContent(emptyList);
-        int offset = 0;
-        boolean hasNext = false;
-        boolean hasPrevious = false;
-        certificatePage.setTotalCount(0);
-        certificatePage.setOffset(offset);
-        certificatePage.setHasNext(hasNext);
-        certificatePage.setHasPrevious(hasPrevious);
-
-        when(certificateRepositoryMock.findAll(page,size)).thenReturn(certificatePage);
-        //when
-        Page<Certificate> actual =  certificateService.findAll(page,size);
-        //then
-        verify(certificateRepositoryMock, times(1)).findAll(page,size);
-        assertEquals(certificatePage, actual);
-    }
-
-//    @Test
-//    public void filteredFindAll_PageSize_OK() {
-//        Page<Certificate> certificatePage = new Page<>();
-//        certificatePage.setContent(certificates);
-//        int offset = 0;
-//        boolean hasNext = false;
-//        boolean hasPrevious = false;
-//        certificatePage.setTotalCount(2);
-//        certificatePage.setOffset(offset);
-//        certificatePage.setHasNext(hasNext);
-//        certificatePage.setHasPrevious(hasPrevious);
-//
-//        when(certificateRepositoryMock.filteredFindAll(page, size)).thenReturn(certificatePage);
-//        //when
-//        Page<Certificate> actual = certificateService.filteredFindAll(page, size);
-//        //then
-//        verify(certificateRepositoryMock, times(1)).findAll(page, size);
-//        assertEquals(certificatePage, actual);
-//    }
-//
 
     @Test
     public void update_Certificate_OK() {
@@ -207,6 +144,26 @@ public class CertificateServiceImplTest {
         Optional<Certificate> actual = certificateService.update(certificateWithInvalidId);
         //than
         verify(certificateRepositoryMock, times(1)).findById(INVALID_ID, Certificate.class);
+        assertEquals(Optional.empty(), actual);
+    }
+
+    @Test
+    public void find_ById_OK() {
+        when(certificateRepositoryMock.findById(VALID_ID,Certificate.class)).thenReturn(Optional.of(certificateWithId));
+        //when
+        Optional<Certificate> actual = certificateService.findById(VALID_ID,Certificate.class);
+        //then
+        verify(certificateRepositoryMock, times(1)).findById(VALID_ID,Certificate.class);
+        assertEquals(Optional.of(certificateWithId), actual);
+    }
+
+    @Test
+    public void find_ById_NotFound() {
+        when(certificateRepositoryMock.findById(INVALID_ID,Certificate.class)).thenReturn(Optional.empty());
+        //when
+        Optional<Certificate> actual = certificateService.findById(INVALID_ID,Certificate.class);
+        //then
+        verify(certificateRepositoryMock, times(1)).findById(INVALID_ID,Certificate.class);
         assertEquals(Optional.empty(), actual);
     }
 
@@ -247,10 +204,8 @@ public class CertificateServiceImplTest {
     public void delete_CertificateId_NotFoundException() {
         when(certificateRepositoryMock.findById(INVALID_ID, Certificate.class)).thenReturn(Optional.empty());
         //when
-
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
                 certificateService.delete(INVALID_ID, Certificate.class));
-
         //then
         assertNotNull(exception);
         verify(certificateRepositoryMock, times(1)).findById(INVALID_ID, Certificate.class);

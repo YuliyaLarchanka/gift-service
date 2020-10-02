@@ -3,7 +3,10 @@ package com.epam.esm.service.impl;
 import com.epam.esm.repository.AccountRepository;
 import com.epam.esm.repository.entity.Account;
 import com.epam.esm.repository.entity.RoleEnum;
+import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.AccountService;
+import com.epam.esm.service.exception.DuplicateEntityException;
+import com.epam.esm.service.exception.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -15,12 +18,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class AccountServiceImplTest {
     private final static long VALID_ID = 1L;
-    private final static long INVALID_ID = 10000000L;
-
 
     @Mock
     private AccountRepository accountRepositoryMock;
@@ -30,11 +32,9 @@ public class AccountServiceImplTest {
 
     private AccountService accountService;
     private AccountService accountServiceSpy;
-    private Account account1;
+    private Account account;
     private Account accountWithId;
     private String encoded;
-
-
 
     @BeforeEach
     public void setUpMocks() {
@@ -42,49 +42,55 @@ public class AccountServiceImplTest {
         accountService = new AccountServiceImpl(accountRepositoryMock, passwordEncoderMock);
         accountServiceSpy = spy(accountService);
 
-        account1 = new Account();
-        account1.setLogin("Bob123");
-        account1.setPassword("123456");
-
-        Account account2 = new Account();
-        account2.setLogin("Joe123");
-        account1.setPassword("123456");
-
-        accountWithId = account1;
+        account = prepareAccount("Bob123", "123456");
+        accountWithId = account;
         accountWithId.setId(VALID_ID);
         accountWithId.setRole(RoleEnum.ROLE_CLIENT);
-
-        Account accountWithInvalidId = account1;
-        accountWithInvalidId.setId(INVALID_ID);
-
-        List<Account> accounts = new ArrayList<>();
-        accounts.add(account1);
-        accounts.add(account2);
 
         encoded = "123456";
     }
 
+    private Account prepareAccount(String login, String password) {
+        Account account = new Account();
+        account.setLogin(login);
+        account.setPassword(password);
+        return account;
+    }
+
     @Test
     public void create_Account_OK() {
-        when(accountRepositoryMock.findByLogin(account1.getLogin())).thenReturn(Optional.empty());
-        when(passwordEncoderMock.encode(account1.getPassword())).thenReturn(encoded);
+        when(accountRepositoryMock.findByLogin(account.getLogin())).thenReturn(Optional.empty());
+        when(passwordEncoderMock.encode(account.getPassword())).thenReturn(encoded);
         when(accountRepositoryMock.create(accountWithId)).thenReturn(accountWithId);
         //when
-        Account actual = accountServiceSpy.create(account1);
+        Account actual = accountServiceSpy.create(account);
         //then
-        verify(accountRepositoryMock, times(1)).findByLogin(account1.getLogin());
-        verify(passwordEncoderMock, times(1)).encode(account1.getPassword());
+        verify(accountRepositoryMock, times(1)).findByLogin(account.getLogin());
+        verify(passwordEncoderMock, times(1)).encode(account.getPassword());
         verify(accountRepositoryMock, times(1)).create(accountWithId);
         assertEquals(accountWithId, actual);
     }
 
     @Test
-    public void find_Login_OK() {
-        when(accountRepositoryMock.findByLogin(account1.getLogin())).thenReturn(Optional.of(accountWithId));
+    public void create_Account_DuplicateException() {
+        //given
+        when(accountRepositoryMock.findByLogin(account.getLogin())).thenThrow(new DuplicateEntityException("Account with the same login already exists"));
+        String expectedMessage = "Account with the same login already exists";
         //when
-        Optional<Account> actual = accountService.findByLogin(account1.getLogin());
+        DuplicateEntityException actualException = assertThrows(DuplicateEntityException.class,
+                () -> accountServiceSpy.create(account));
         //then
-        verify(accountRepositoryMock, times(1)).findByLogin(account1.getLogin());
+        verify(accountRepositoryMock, times(1)).findByLogin(account.getLogin());
+        assertEquals(expectedMessage, actualException.getMessage());
+    }
+
+    @Test
+    public void findByLogin_Login_OK() {
+        when(accountRepositoryMock.findByLogin(account.getLogin())).thenReturn(Optional.of(accountWithId));
+        //when
+        Optional<Account> actual = accountService.findByLogin(account.getLogin());
+        //then
+        verify(accountRepositoryMock, times(1)).findByLogin(account.getLogin());
         assertEquals(Optional.of(accountWithId), actual);
     }
 }
