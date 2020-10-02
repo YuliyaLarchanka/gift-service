@@ -1,23 +1,14 @@
 package com.epam.esm.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import lombok.Data;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Data
 public class AuthenticationResponseDto {
+    private Long id;
+
+    private String login;
+
     private String token;
-
-    public AuthenticationResponseDto(String token) {
-        this.token = token;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
 }

@@ -58,49 +58,6 @@ public class CertificateRepositoryImpl extends ApiRepositoryImpl<Certificate, Lo
         } catch (NoResultException e) {
             return page;
         }
-
         return page;
-    }
-
-    @Override
-    public Page<Certificate> filterCertificatesByTagAndDescription(List<String> tagNames, String descriptionPart, String order, int page, int size) {
-        StringBuilder sql = new StringBuilder("SELECT c.certificate_id, c.name, c.description, c.price," +
-                " c.date_of_creation, c.date_of_modification, c.duration_in_days, t.is_deleted FROM ");
-
-        if (descriptionPart != null) {
-            sql.append("filter_by_text('").append(descriptionPart).append("') as c");
-        } else {
-            sql.append("certificate as c");
-        }
-
-        if (tagNames.size() > 0) {
-
-            int tagNamesSize = tagNames.size()-1;
-
-           sql.append(" JOIN certificate_m2m_tag as m2m " +
-                        "ON m2m.certificate_id = c.certificate_id join tag t " +
-                   "on m2m.tag_id = t.tag_id where t.name in (");
-
-           for (String name : tagNames) {
-                sql.append("'" + name + "'");
-                if (tagNames.indexOf(name)!=tagNamesSize){
-                   sql.append(", ");
-                }else{
-                    sql.append(")");
-                }
-            }
-            }
-
-        if (order != null) {
-            sql.append(" ORDER BY c.date_of_creation ").append(order.toUpperCase());
-        }
-
-        Query query = em.createNativeQuery(sql.toString(), Certificate.class);
-        List totalList = em.createNativeQuery(sql.toString(), Certificate.class).getResultList();
-        int totalCount = totalList.size();
-        Page<Certificate> filledPage = fillPage(page, size, totalCount);
-        List<Certificate> certificatesPerPage = query.setFirstResult(filledPage.getOffset()).setMaxResults(size).getResultList();
-        filledPage.setContent(certificatesPerPage);
-        return filledPage;
     }
 }

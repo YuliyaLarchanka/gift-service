@@ -22,11 +22,9 @@ public class AuthorizedAccountService implements UserDetailsService {
         Optional<AuthorisedAccount> authorisedAccountOptional = accountService
                 .findByLogin(username)
                 .map(AuthorisedAccount::fromUserEntityToCustomUserDetails);
-
         if (authorisedAccountOptional.isEmpty()){
             throw new UsernameNotFoundException(username);
         }
-
         return authorisedAccountOptional.get();
     }
 }

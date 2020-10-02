@@ -7,7 +7,6 @@ import com.epam.esm.repository.entity.Page;
 import com.epam.esm.repository.entity.Tag;
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.exception.EmptyUpdateParameterException;
-import com.epam.esm.service.exception.WrongFilterOrderException;
 import com.epam.esm.service.exception.WrongPriceValueParameter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -16,10 +15,6 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,26 +29,26 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
     @Override
     @Transactional
     public Certificate create(Certificate certificate) {
-        List<Tag> tagList = certificate.getTagList();
-        tagList = tagList.stream().filter(tag -> tag.getName().length()>2)
-                .peek(tag -> tag.setName(tag.getName().toLowerCase()))
-                .collect(Collectors.toList());
-        if (!tagList.isEmpty()) {
-            tagList = tagList.stream()
+        List<Tag> tags = certificate.getTagList();
+        tags = fetchExistedTagsOfCertificateToCreate(tags);
+        if (!tags.isEmpty()) {
+            tags = tags.stream()
                     .map(this::createTagIfNotExist)
                     .collect(Collectors.toList());
         }
-        certificate.setTagList(tagList);
+        certificate.setTagList(tags);
         return repository.create(certificate);
     }
 
-    private Tag createTagIfNotExist(Tag tag){
-        Tag tagToCreate = new Tag();
-        String name = tag.getName();
-        tagToCreate.setName(name);
-        tagToCreate.setDeleted(false);
+    private List<Tag> fetchExistedTagsOfCertificateToCreate(List<Tag> tags){
+        return tags.stream().filter(tag -> tag.getName().length()>2)
+                .peek(tag -> tag.setName(tag.getName().toLowerCase()))
+                .collect(Collectors.toList());
+    }
 
-        Optional<Tag> tagOptional = tagRepository.findByName(name);
+    private Tag createTagIfNotExist(Tag tag){
+        Tag tagToCreate = fillTag(tag);
+        Optional<Tag> tagOptional = tagRepository.findByName(tag.getName());
         if (tagOptional.isEmpty()){
             return tagRepository.create(tagToCreate);
         }else if (tagOptional.isPresent() && tagOptional.get().isDeleted()){
@@ -61,32 +56,47 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
             tag1.setDeleted(false);
             return tag1;
         }
-
         return tagOptional.get();
+    }
+
+    private Tag fillTag(Tag tag){
+        Tag tagToCreate = new Tag();
+        String name = tag.getName();
+        tagToCreate.setName(name);
+        tagToCreate.setDeleted(false);
+        return tagToCreate;
     }
 
     @Override
     @Transactional
     public Optional<Certificate> update(Certificate certificate) {
-        List<Tag> tags = certificate.getTagList().stream().map(tag -> {
-            tag.setName(tag.getName().toLowerCase());
-            return tag;
-        }).collect(Collectors.toList());
+        List<Tag> tags = convertTagsToLowerCase(certificate);
         certificate.setTagList(tags);
         Optional<Certificate> existedCertificateOptional = repository.findById(certificate.getId(), Certificate.class);
         if (existedCertificateOptional.isEmpty() || existedCertificateOptional.get().isDeleted()) {
             return Optional.empty();
         }
         Certificate existedCertificate = existedCertificateOptional.get();
+        fillCertificate(existedCertificate, certificate);
+        return repository.update(existedCertificate);
+    }
+
+    private List<Tag> convertTagsToLowerCase(Certificate certificate){
+       return certificate.getTagList().stream().map(tag -> {
+            tag.setName(tag.getName().toLowerCase());
+            return tag;
+        }).collect(Collectors.toList());
+    }
+
+    private Certificate fillCertificate(Certificate existedCertificate, Certificate certificate){
         existedCertificate.setName(certificate.getName());
         existedCertificate.setDescription(certificate.getDescription());
         existedCertificate.setPrice(certificate.getPrice());
         existedCertificate.setDurationInDays(certificate.getDurationInDays());
-
         List<Tag> tagList = certificate.getTagList();
         tagList = tagList.stream().map(this::createTagIfNotExist).collect(Collectors.toList());
         existedCertificate.setTagList(tagList);
-        return repository.update(existedCertificate);
+        return existedCertificate;
     }
 
     @Override
@@ -96,6 +106,11 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
             return Optional.empty();
         }
         Certificate certificateToUpdate = certificateToUpdateOptional.get();
+        findFieldToUpdate(certificate, certificateToUpdate);
+        return repository.update(certificateToUpdate);
+    }
+
+    private void findFieldToUpdate(Certificate certificate, Certificate certificateToUpdate){
         String name = certificate.getName();
         String description = certificate.getDescription();
         BigDecimal price = certificate.getPrice();
@@ -111,7 +126,6 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
         } else{
             throw new EmptyUpdateParameterException("Empty or invalid field value");
         }
-        return repository.update(certificateToUpdate);
     }
 
     @Override
@@ -122,13 +136,4 @@ public class CertificateServiceImpl extends ApiServiceImpl<Certificate, Long, Ce
         price = price.equalsIgnoreCase("min")? "asc" : "desc";
         return repository.filterCertificatesByTagAndPrice(tagNames, price);
     }
-
-    @Override
-    public Page<Certificate> filterCertificatesByTagAndDescription(List<String> tagNames, String descriptionPart, String order, int page, int size) {
-        if (!StringUtils.isEmpty(order) && !"desc".equalsIgnoreCase(order) && !"asc".equalsIgnoreCase(order)) {
-            throw new WrongFilterOrderException("Wrong filter order '" + order + "' ");
-        }
-        return repository.filterCertificatesByTagAndDescription(tagNames, descriptionPart, order, page, size);
-    }
-
 }

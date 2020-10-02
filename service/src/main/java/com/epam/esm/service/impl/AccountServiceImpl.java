@@ -2,12 +2,9 @@ package com.epam.esm.service.impl;
 
 import com.epam.esm.repository.AccountRepository;
 import com.epam.esm.repository.entity.Account;
-import com.epam.esm.repository.entity.Certificate;
 import com.epam.esm.repository.entity.RoleEnum;
 import com.epam.esm.service.AccountService;
-import com.epam.esm.service.exception.AuthenticationException;
 import com.epam.esm.service.exception.DuplicateEntityException;
-import com.epam.esm.service.exception.EntityNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,11 +27,16 @@ public class AccountServiceImpl extends ApiServiceImpl<Account, Long, AccountRep
         if (accountOptional.isPresent()){
             throw new DuplicateEntityException("Account with the same login already exists");
         }
+        Account accountToCreate = fillAccount(account);
+        return repository.create(accountToCreate);
+    }
+
+    private Account fillAccount(Account account){
         String rawPassword = account.getPassword();
         String encodedPassword = passwordEncoder.encode(rawPassword);
         account.setPassword(encodedPassword);
         account.setRole(RoleEnum.ROLE_CLIENT);
-        return repository.create(account);
+        return account;
     }
 
     @Override
