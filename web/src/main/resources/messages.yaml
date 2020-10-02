@@ -1,0 +1,27 @@
+tag-name:
+  empty: Tag name can't be blank.
+  size: Tag name can't be less than 3 characters and more than 15 characters.
+
+login:
+  empty: Login can't be blank.
+  size: Login size can't be less than 3 characters and more than 15 characters.
+
+password:
+  empty: Password can't be blank.
+  size: Password size can't be less than 5 characters and more than 15 characters.
+
+certificate:
+  name:
+    empty: Name can't be blank.
+    size: Name can't be less that 3 characters and more than 35 characters.
+  description:
+    size: Description can't be less that 10 characters and more than 100 characters.
+  price:
+    empty: Price can't be blank.
+    decimal-min: Price can't be lower than 1$.
+    digits: Price can't be more than 99999.99$. And only 2 values after point.
+  duration-in-days:
+    empty: Duration can't be blank.
+    min: Duration can't be less than a day.
+    max: Duration can't be more than a year(365 days).
+
