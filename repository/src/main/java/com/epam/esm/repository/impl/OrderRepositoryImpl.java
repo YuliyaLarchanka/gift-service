@@ -44,7 +44,6 @@ public class OrderRepositoryImpl extends ApiRepositoryImpl<Order, Long> implemen
     @Override
     public Page<Order> findOrdersByAccountId(Long id, int page, int size) {
         String sql = SELECT_ORDER_BY_ACCOUNT_ID_JPQL;
-
         Query query = em.createQuery(sql, Order.class);
         List<Order> totalList = (List<Order>) query.setParameter(1, id).getResultList().stream().collect(Collectors.toList());
         int totalCount = totalList.size();
@@ -60,7 +59,6 @@ public class OrderRepositoryImpl extends ApiRepositoryImpl<Order, Long> implemen
         if(orderOptional.isEmpty()){
             return Optional.empty();
         }
-
         String sql = SELECT_ORDER_BY_ORDER_ID_JPQL;
         Query query = em.createQuery(sql, Order.class);
         Order order =  (Order) query.setParameter(1, accountId).setParameter(2, orderId).getSingleResult();
